@@ -79,7 +79,7 @@
     </button>
 
     <div class="bg-gray-800 text-white dark:bg-black text-sm py-2 px-4 marquee-container min-h-[36px]">
-        <div class="marquee-content" id="marquee-text"></div>
+        <div class="marquee-content" id="marquee-text">載入中...</div>
     </div>
 
     <header class="sticky top-0 z-30 bg-white/95 backdrop-blur shadow-sm dark:bg-gray-800/95 dark:border-b dark:border-gray-700">
@@ -201,7 +201,7 @@
     <script type="module">
         // 1. 引入 Firebase SDK (包含 Auth)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, getDoc, setDoc, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // ============================================
@@ -288,12 +288,15 @@
 
         // 資料容器
         let APP_DATA = JSON.parse(JSON.stringify(STATIC_DATA));
+        let SYSTEM_SETTINGS = {
+            marquee: '📢 歡迎來到北港高中學生會官方網站！最新活動：金勾盃歌唱比賽決賽將於 12/25 舉行！'
+        };
 
         const I18N = {
             zh: {
                 home: '首頁', events: '近期活動', mailboxes: '信箱專區', clubs: '社團專區', downloads: '資料下載',
                 contact: '聯絡我們', org: '組織架構', finance: '財務明細', meetings: '會議紀錄', admin: '後台管理',
-                marquee: '📢 歡迎來到北港高中學生會官方網站！最新活動：金勾盃歌唱比賽決賽將於 12/25 舉行！', 
+                marquee: '', // 動態載入
                 heroTitle: '北港高中學生會互動網站',
                 heroSubtitle: '你的聲音，我們的行動。共創更美好的校園生活。',
                 btnComplaint: '前往信箱專區', news: '最新公告', confession: '匿名告白牆',
@@ -308,13 +311,13 @@
                 download_btn: '下載檔案', write_confession: '我要告白',
                 filter_all: '全部', filter_academic: '教務', filter_holiday: '假日', filter_event: '活動',
                 login_title: '學生會幹部登入', login_btn: '登入', login_email: '電子郵件', login_pwd: '密碼',
-                admin_dashboard: '管理儀表板', admin_news: '公告管理', admin_events: '活動管理', admin_confess: '告白審核', admin_logout: '登出',
-                add_btn: '新增', delete_btn: '刪除', no_data: '暫無資料'
+                admin_dashboard: '管理儀表板', admin_news: '公告管理', admin_events: '活動管理', admin_confess: '告白審核', admin_system: '系統設定', admin_logout: '登出',
+                add_btn: '新增', save_btn: '儲存設定', delete_btn: '刪除', no_data: '暫無資料'
             },
             en: {
                 home: 'Home', events: 'Events', mailboxes: 'Mailboxes', clubs: 'Clubs', downloads: 'Downloads',
                 contact: 'Contact Us', org: 'Organization', finance: 'Finance', meetings: 'Minutes', admin: 'Admin Panel',
-                marquee: '📢 Welcome to PKSH Student Council Website! Upcoming: Jingle Bells Finals on Dec 25!', 
+                marquee: '', 
                 heroTitle: 'PKSH Student Council',
                 heroSubtitle: 'Your Voice, Our Action. Creating a better campus life together.',
                 btnComplaint: 'Go to Mailboxes', news: 'Latest News', confession: 'Confession Wall',
@@ -329,8 +332,8 @@
                 download_btn: 'Download', write_confession: 'Write Confession',
                 filter_all: 'All', filter_academic: 'Academic', filter_holiday: 'Holiday', filter_event: 'Event',
                 login_title: 'Staff Login', login_btn: 'Login', login_email: 'Email', login_pwd: 'Password',
-                admin_dashboard: 'Dashboard', admin_news: 'Manage News', admin_events: 'Manage Events', admin_confess: 'Confessions', admin_logout: 'Logout',
-                add_btn: 'Add', delete_btn: 'Delete', no_data: 'No Data'
+                admin_dashboard: 'Dashboard', admin_news: 'Manage News', admin_events: 'Manage Events', admin_confess: 'Confessions', admin_system: 'System Settings', admin_logout: 'Logout',
+                add_btn: 'Add', save_btn: 'Save Settings', delete_btn: 'Delete', no_data: 'No Data'
             }
         };
 
@@ -342,17 +345,57 @@
             confessionIndex: 0,
             eventFilter: 'All',
             user: null, // User Auth State
-            adminTab: 'news' // news, events, confessions
+            adminTab: 'news' // news, events, confessions, system
         };
 
         const t = (key) => I18N[APP_STATE.lang][key] || key;
         const isEn = () => APP_STATE.lang === 'en';
+
+        // --- Helper: Robust Date Formatting ---
+        // 解決 undefined 問題的核心函式
+        function formatDateHelper(dateStr) {
+            // 預設值
+            let month = '??';
+            let day = '??';
+            
+            if (!dateStr) return { month, day };
+
+            // 嘗試處理 YYYY-MM-DD 或 MM/DD 或 MM-DD
+            try {
+                // 如果包含 '-'，將其替換為 '/'
+                const standardized = dateStr.replace(/-/g, '/');
+                const parts = standardized.split('/');
+                
+                if (parts.length >= 2) {
+                    // 如果有年份 (例如 2025/12/27)，取最後兩位
+                    // 如果是 12/27，parts[0]是月，parts[1]是日
+                    if (parts.length === 3) {
+                        month = parts[1];
+                        day = parts[2];
+                    } else {
+                        month = parts[0];
+                        day = parts[1];
+                    }
+                }
+            } catch (e) {
+                console.error("Date parse error", e);
+            }
+            return { month, day };
+        }
 
         // --- Firebase Data Handling ---
         
         async function loadDataFromFirebase() {
             if (!db) return;
             try {
+                // 0. Load System Settings (Marquee)
+                const settingsRef = doc(db, "settings", "config");
+                const settingsSnap = await getDoc(settingsRef);
+                if (settingsSnap.exists()) {
+                    SYSTEM_SETTINGS.marquee = settingsSnap.data().marquee || SYSTEM_SETTINGS.marquee;
+                }
+                updateMarquee(); // Update UI immediately
+
                 // 1. Load Confessions
                 const qConfess = query(collection(db, "confessions"), orderBy("timestamp", "desc"), limit(20));
                 const snapConfess = await getDocs(qConfess);
@@ -366,7 +409,6 @@
                         author: d.author
                     });
                 });
-                // 合併資料（優先顯示 Firebase 資料）
                 if (fetchedConfessions.length > 0) {
                     APP_DATA.confessionWall = fetchedConfessions;
                 }
@@ -380,7 +422,6 @@
                      fetchedNews.push({ id: doc.id, ...d });
                 });
                 if(fetchedNews.length > 0) {
-                    // 將 Firebase 資料加到靜態資料前面
                     APP_DATA.announcements = [...fetchedNews, ...STATIC_DATA.announcements];
                 }
 
@@ -394,7 +435,6 @@
                 });
                 if(fetchedEvents.length > 0) {
                     APP_DATA.events = [...fetchedEvents, ...STATIC_DATA.events];
-                    // 重新排序日期
                     APP_DATA.events.sort((a,b) => a.date.localeCompare(b.date));
                 }
 
@@ -409,7 +449,7 @@
         if (auth) {
             onAuthStateChanged(auth, (user) => {
                 APP_STATE.user = user;
-                if (APP_STATE.view === 'admin') render(); // Re-render admin view on auth change
+                if (APP_STATE.view === 'admin') render(); 
             });
         }
 
@@ -468,19 +508,28 @@
 
             if(!title || !date) return Swal.fire('欄位未填', '請填寫完整資訊', 'warning');
             
-            // Format date to MM/DD for display consistency with static data, or keep YYYY-MM-DD
-            // Here we store standard string
             try {
+                // 強制統一儲存格式，解決顯示 bug
+                // 輸入 YYYY-MM-DD -> 儲存為 YYYY-MM-DD (標準化)
                 await addDoc(collection(db, "events"), {
                     title_zh: title, title_en: title,
-                    date: date.replace('-','/').substring(5), // stored as MM/DD roughly or just string
-                    fullDate: date, // useful for sorting
+                    date: date, // 儲存原始日期字串，由顯示端 Helper 處理
                     time: time, location_zh: loc, location_en: loc,
                     type: type, timestamp: serverTimestamp()
                 });
                 Swal.fire('新增成功', '', 'success');
                 await loadDataFromFirebase();
             } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+        }
+
+        window.saveSystemSettings = async () => {
+            const marqueeText = document.getElementById('system-marquee').value;
+            try {
+                await setDoc(doc(db, "settings", "config"), { marquee: marqueeText });
+                SYSTEM_SETTINGS.marquee = marqueeText;
+                updateMarquee();
+                Swal.fire('設定已儲存', '跑馬燈已更新', 'success');
+            } catch(e) { Swal.fire('儲存失敗', e.message, 'error'); }
         }
 
         window.deleteItem = async (collectionName, id) => {
@@ -491,7 +540,7 @@
                     await deleteDoc(doc(db, collectionName, id));
                     Swal.fire('已刪除', '', 'success');
                     await loadDataFromFirebase();
-                    render(); // Refresh admin UI
+                    render();
                 } catch(e) { Swal.fire('刪除失敗', '無法刪除靜態資料或權限不足', 'error'); }
             }
         }
@@ -537,7 +586,7 @@
         // --- Logic ---
         function updateMarquee() {
             const el = document.getElementById('marquee-text');
-            if(el) el.innerText = t('marquee');
+            if(el) el.innerText = SYSTEM_SETTINGS.marquee;
         }
 
         window.toggleSearch = () => {
@@ -684,11 +733,15 @@
                 ? APP_DATA.events 
                 : APP_DATA.events.filter(e => e.type === filter);
 
-            const eventsHtml = filteredEvents.length > 0 ? filteredEvents.map(ev => `
+            const eventsHtml = filteredEvents.length > 0 ? filteredEvents.map(ev => {
+                // [FIX] 使用 Helper 處理日期格式，避免 undefined
+                const { month, day } = formatDateHelper(ev.date);
+                
+                return `
                 <div class="flex items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4 border-l-4 ${ev.type === 'Holiday' ? 'border-red-500' : ev.type === 'Academic' ? 'border-blue-500' : 'border-theme'} hover:shadow-md transition">
                     <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-center min-w-[80px]">
-                        <span class="block text-xl font-bold text-gray-800 dark:text-white">${ev.date.split('/')[1]}</span>
-                        <span class="block text-xs text-gray-500">${ev.date.split('/')[0]}月</span>
+                        <span class="block text-xl font-bold text-gray-800 dark:text-white">${day}</span>
+                        <span class="block text-xs text-gray-500">${month}月</span>
                     </div>
                     <div class="ml-4 flex-grow">
                         <div class="flex justify-between items-start">
@@ -701,9 +754,8 @@
                         </p>
                     </div>
                 </div>
-            `).join('') : `<div class="text-center text-gray-500 py-10">此分類暫無活動</div>`;
+            `}).join('') : `<div class="text-center text-gray-500 py-10">此分類暫無活動</div>`;
 
-            // Filter Buttons
             const makeBtn = (type, label) => `
                 <button onclick="setEventFilter('${type}')" class="px-4 py-2 rounded-full text-sm font-bold transition ${APP_STATE.eventFilter === type ? 'bg-theme text-white shadow-md' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300'}">
                     ${label}
@@ -855,7 +907,7 @@
             return `<h1 class="text-3xl font-bold mb-6 text-theme text-center">${t('meetingTitle')}</h1><div class="space-y-4 max-w-3xl mx-auto">${list}</div>`;
         }
 
-        // --- NEW: Admin System ---
+        // --- Admin System ---
         function renderAdmin() {
             if (!APP_STATE.user) {
                 // Login Form
@@ -956,6 +1008,22 @@
                         </div>
                     `;
                 }
+                // Tab Content: System Settings
+                else if (tab === 'system') {
+                    contentHtml = `
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                            <h3 class="font-bold mb-4 dark:text-white text-lg">系統全域設定</h3>
+                            
+                            <div class="mb-6">
+                                <label class="block font-bold mb-2 dark:text-gray-300">首頁跑馬燈內容</label>
+                                <textarea id="system-marquee" rows="3" class="w-full p-3 rounded border dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-theme outline-none">${SYSTEM_SETTINGS.marquee}</textarea>
+                                <p class="text-xs text-gray-500 mt-1">更新後所有使用者重新整理頁面即可看到變更。</p>
+                            </div>
+
+                            <button onclick="saveSystemSettings()" class="bg-theme text-white px-6 py-2 rounded font-bold hover:bg-theme-dark transition">${t('save_btn')}</button>
+                        </div>
+                    `;
+                }
 
                 return `
                     <div class="bg-white dark:bg-gray-800 min-h-[600px] rounded-xl shadow-lg flex flex-col md:flex-row overflow-hidden border border-gray-100 dark:border-gray-700">
@@ -967,6 +1035,7 @@
                             <button onclick="switchAdminTab('news')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='news'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_news')}</button>
                             <button onclick="switchAdminTab('events')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='events'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_events')}</button>
                             <button onclick="switchAdminTab('confessions')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='confessions'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_confess')}</button>
+                            <button onclick="switchAdminTab('system')" class="text-left px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 ${tab==='system'?'bg-white dark:bg-gray-800 shadow font-bold text-theme':''}">${t('admin_system')}</button>
                             <div class="mt-auto">
                                 <button onclick="handleLogout()" class="w-full text-left px-4 py-2 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">${t('admin_logout')}</button>
                             </div>
