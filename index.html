@@ -250,6 +250,7 @@
         }
 
         // --- 靜態資料 (Fallback) ---
+        // [CLEANED] 清空了測試資料，保留必要結構
         const STATIC_DATA = {
             announcements: [
                 { 
@@ -268,18 +269,11 @@
                 { id: 's3', content: "學生會辛苦了，活動辦得很棒！", content_en: "Student Council, thank you for your hard work! Great event!", author: "高三老屁股" }
             ],
             events: [
-                { id: 'e1', date: '01/01', title_zh: '元旦', title_en: "New Year's Day", location_zh: '全校', location_en: 'Campus', time: '全天', type: 'Holiday' },
-                { id: 'e2', date: '01/09', title_zh: '第八節輔導課結束', title_en: '8th Period Supplementary Classes End', location_zh: '各班教室', location_en: 'Classrooms', time: '17:00', type: 'Academic' },
-                { id: 'e3', date: '01/16', title_zh: '高一高二職三期末考 (1/16, 19-20)', title_en: 'Final Exams', location_zh: '各班教室', location_en: 'Classrooms', time: '08:00', type: 'Academic' },
-                { id: 'e4', date: '01/17', title_zh: '大學學測 (1/17-19)', title_en: 'GSAT', location_zh: '考場', location_en: 'Exam Centers', time: '08:00', type: 'Academic' },
-                { id: 'e5', date: '01/20', title_zh: '休業式、公告自主學習名單', title_en: 'Closing Ceremony', location_zh: '各班教室', location_en: 'Classrooms', time: '全天', type: 'Academic' },
-                { id: 'e6', date: '01/21', title_zh: '提前上 114-2 課程 (1/21-23)', title_en: 'Early Start of 114-2', location_zh: '各班教室', location_en: 'Classrooms', time: '08:00', type: 'Academic' },
-                // [FIX] 新增一個活動類型的靜態資料，確保篩選器一開始有東西顯示
-                { id: 'e_demo', date: '2025-12-25', title_zh: '聖誕歌唱大賽', title_en: 'Christmas Singing Contest', location_zh: '大禮堂', location_en: 'Auditorium', time: '13:00', type: 'Activity', link: '#' }
+                // [CLEANED] 這裡清空了，但保留一個註解的範例以免程式壞掉
+                // { id: 'e_demo', date: '2025-12-25', title_zh: '活動範例', title_en: 'Event Demo', location_zh: '大禮堂', location_en: 'Auditorium', time: '13:00', type: 'Activity', link: '#' }
             ],
             finance: [
-                { item_zh: '聖誕活動佈置費', item_en: 'Xmas Decoration', amount: -5000, date: '2025-12-15', type: 'Out' },
-                { item_zh: '傳情卡片義賣收入', item_en: 'Card Sale Income', amount: 8500, date: '2025-12-18', type: 'In' },
+                // [CLEANED] 這裡清空了，等待正式輸入
             ],
             clubs: [
                 { name_zh: '熱舞社', name_en: 'Pop Dance Club', category: 'Dance', emoji: '💃', ig: 'https://www.instagram.com/pkdc.20_flaming/' },
@@ -360,15 +354,14 @@
             ],
             meetings: [],
             downloads: [
-                { date: '2025-12-24', title_zh: '114金勾盃歌唱決賽時程表(公告版)', title_en: '114 Jingle Bells Finals Schedule', file: '#', type: 'Event' },
-                { date: '2025-08-01', title_zh: '114學年度第1學期教學行事簡曆', title_en: '114-1 Academic Calendar', file: '#', type: 'Academic' }
+                // [CLEANED] 清空下載區，保留範例註解
             ]
         };
 
         // 資料容器
         let APP_DATA = JSON.parse(JSON.stringify(STATIC_DATA));
         let SYSTEM_SETTINGS = {
-            marquee: '📢 歡迎來到北港高中學生會官方網站！最新活動：金勾盃歌唱比賽決賽將於 12/25 舉行！'
+            marquee: '📢 歡迎來到北港高中學生會官方網站！'
         };
 
         const I18N = {
