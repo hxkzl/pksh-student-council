@@ -273,7 +273,9 @@
                 { id: 'e3', date: '01/16', title_zh: '高一高二職三期末考 (1/16, 19-20)', title_en: 'Final Exams', location_zh: '各班教室', location_en: 'Classrooms', time: '08:00', type: 'Academic' },
                 { id: 'e4', date: '01/17', title_zh: '大學學測 (1/17-19)', title_en: 'GSAT', location_zh: '考場', location_en: 'Exam Centers', time: '08:00', type: 'Academic' },
                 { id: 'e5', date: '01/20', title_zh: '休業式、公告自主學習名單', title_en: 'Closing Ceremony', location_zh: '各班教室', location_en: 'Classrooms', time: '全天', type: 'Academic' },
-                { id: 'e6', date: '01/21', title_zh: '提前上 114-2 課程 (1/21-23)', title_en: 'Early Start of 114-2', location_zh: '各班教室', location_en: 'Classrooms', time: '08:00', type: 'Academic' }
+                { id: 'e6', date: '01/21', title_zh: '提前上 114-2 課程 (1/21-23)', title_en: 'Early Start of 114-2', location_zh: '各班教室', location_en: 'Classrooms', time: '08:00', type: 'Academic' },
+                // [FIX] 新增一個活動類型的靜態資料，確保篩選器一開始有東西顯示
+                { id: 'e_demo', date: '2025-12-25', title_zh: '聖誕歌唱大賽', title_en: 'Christmas Singing Contest', location_zh: '大禮堂', location_en: 'Auditorium', time: '13:00', type: 'Activity', link: '#' }
             ],
             finance: [
                 { item_zh: '聖誕活動佈置費', item_en: 'Xmas Decoration', amount: -5000, date: '2025-12-15', type: 'Out' },
@@ -1090,7 +1092,7 @@
                         ${makeBtn('All', t('filter_all'))}
                         ${makeBtn('Academic', t('filter_academic'))}
                         ${makeBtn('Holiday', t('filter_holiday'))}
-                        ${makeBtn('Event', t('filter_event'))}
+                        ${makeBtn('Activity', t('filter_event'))}
                     </div>
                     <div class="animate-fade-in">
                         ${eventsHtml}
@@ -1133,6 +1135,9 @@
         }
 
         function renderFinance() {
+            // [NEW] Calculate Total
+            const total = APP_DATA.finance.reduce((acc, cur) => acc + Number(cur.amount), 0);
+
             const rows = APP_DATA.finance.map(f => `
                 <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                     <td class="py-3 px-4 dark:text-gray-300 whitespace-nowrap">${f.date}</td>
@@ -1140,7 +1145,32 @@
                     <td class="py-3 px-4 text-right"><span class="${f.type === 'In' ? 'text-green-500 bg-green-50 dark:bg-green-900/30' : 'text-red-500 bg-red-50 dark:bg-red-900/30'} font-bold px-2 py-1 rounded">${f.amount > 0 ? '+' : ''}${f.amount}</span></td>
                 </tr>
             `).join('');
-            return `<h1 class="text-3xl font-bold mb-6 text-theme text-center">${t('financeTitle')}</h1><div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden"><div class="p-6 bg-theme/10 border-b border-theme/20"><p class="text-sm text-gray-600 dark:text-gray-300">本表僅列出近期收支概況，詳細報表請至學生會辦公室查閱。</p></div><div class="overflow-x-auto"><table class="w-full text-left border-collapse"><thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200 uppercase text-xs"><tr><th class="py-3 px-4">${t('col_date')}</th><th class="py-3 px-4">${t('col_item')}</th><th class="py-3 px-4 text-right">${t('col_amount')} (TWD)</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+            
+            return `
+                <h1 class="text-3xl font-bold mb-6 text-theme text-center">${t('financeTitle')}</h1>
+                <div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-6 bg-theme/10 border-b border-theme/20 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <p class="text-sm text-gray-600 dark:text-gray-300">本表僅列出近期收支概況，詳細報表請至學生會辦公室查閱。</p>
+                        <div class="flex items-center gap-3 bg-white dark:bg-gray-700 px-4 py-2 rounded-lg shadow-sm">
+                            <span class="font-bold text-gray-600 dark:text-gray-200">總結餘:</span>
+                            <span class="text-2xl font-bold ${total >= 0 ? 'text-green-500' : 'text-red-500'}">
+                                ${total > 0 ? '+' : ''}${total.toLocaleString()}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200 uppercase text-xs">
+                                <tr>
+                                    <th class="py-3 px-4">${t('col_date')}</th>
+                                    <th class="py-3 px-4">${t('col_item')}</th>
+                                    <th class="py-3 px-4 text-right">${t('col_amount')} (TWD)</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>`;
         }
 
         function renderMailboxes() {
