@@ -26,7 +26,7 @@
                             200: '#99f6e4',
                             300: '#5eead4',
                             400: '#2dd4bf',
-                            500: '#14b8a6', // Primary Teal
+                            500: '#14b8a6',
                             600: '#0d9488', 
                             700: '#0f766e',
                             800: '#115e59',
@@ -48,8 +48,7 @@
                         }
                     },
                     boxShadow: {
-                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
-                        'glow': '0 0 15px rgba(20, 184, 166, 0.3)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
                     }
                 }
             }
@@ -59,27 +58,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        /* [核心修復] 導覽列強制不換行設定 */
-        .nav-scroll-container {
-            display: flex;
-            flex-wrap: nowrap;     /* 禁止換行 */
-            overflow-x: auto;      /* 允許橫向捲動 */
-            -webkit-overflow-scrolling: touch; /* iOS 滑動順暢 */
-            scrollbar-width: none; /* Firefox 隱藏捲軸 */
-            -ms-overflow-style: none; /* IE 隱藏捲軸 */
-            gap: 0.5rem;           /* 按鈕間距 */
-            align-items: center;
-            height: 100%;
-        }
-        .nav-scroll-container::-webkit-scrollbar {
-            display: none; /* Chrome/Safari 隱藏捲軸 */
-        }
-        
-        /* [核心修復] 按鈕強制不壓縮 */
-        .nav-btn {
-            white-space: nowrap; /* 文字不換行 */
-            flex-shrink: 0;      /* 空間不足時不壓縮 */
-        }
+        /* 隱藏捲軸但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* 玻璃擬態 */
         .glass {
@@ -93,10 +74,30 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* 網址自動轉換後的按鈕樣式 */
-        .news-content a.btn-link {
-            text-decoration: none !important;
+        /* [核心修復] 強制不換行與壓縮設定 */
+        .nav-container {
+            display: flex;
+            flex: 1;
+            min-width: 0; /* 關鍵：允許 flex item 縮小以觸發 scroll */
+            justify-content: center;
         }
+        
+        .nav-scroll-area {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            gap: 0.25rem;
+            padding: 0 1rem;
+            scrollbar-width: none; /* Firefox */
+        }
+        .nav-scroll-area::-webkit-scrollbar { display: none; } /* Chrome */
+
+        .nav-btn {
+            flex-shrink: 0; /* 關鍵：禁止按鈕被壓縮 */
+            white-space: nowrap; /* 關鍵：禁止文字換行 */
+        }
+
+        /* 連結樣式 */
         .news-content a:not(.btn-link) {
             color: #0d9488;
             text-decoration: none;
@@ -104,18 +105,12 @@
             font-weight: 600;
             transition: border-color 0.2s;
         }
-        .news-content a:not(.btn-link):hover {
-            border-bottom-color: #0d9488;
-        }
+        .news-content a:not(.btn-link):hover { border-bottom-color: #0d9488; }
+        .news-content a.btn-link { text-decoration: none !important; }
 
-        /* 卡片懸浮微互動 */
-        .hover-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .hover-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.1);
-        }
+        /* 卡片互動 */
+        .hover-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .hover-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col min-h-screen relative font-sans selection:bg-theme-100 selection:text-theme-700">
@@ -149,8 +144,8 @@
                     </div>
                 </a>
 
-                <div class="hidden md:flex flex-1 min-w-0 h-full items-center justify-center">
-                    <nav class="nav-scroll-container px-4">
+                <div class="hidden xl:flex nav-container">
+                    <nav class="nav-scroll-area">
                         <button class="nav-btn px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors" onclick="navigate('home')" data-key="home">首頁</button>
                         <button class="nav-btn px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors" onclick="navigate('events')" data-key="events">近期活動</button>
                         <button class="nav-btn px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
@@ -175,14 +170,14 @@
                         <i data-lucide="moon" id="dark-icon" class="w-5 h-5"></i>
                         <i data-lucide="sun" id="light-icon" class="w-5 h-5 hidden"></i>
                     </button>
-                    <button id="menu-button" class="md:hidden p-2 text-slate-600 dark:text-slate-200">
+                    <button id="menu-button" class="xl:hidden p-2 text-slate-600 dark:text-slate-200">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                 </div>
             </div>
         </div>
         
-        <div id="mobile-menu" class="md:hidden hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 absolute w-full z-40 shadow-2xl animate-fade-in">
+        <div id="mobile-menu" class="xl:hidden hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 absolute w-full z-40 shadow-2xl animate-fade-in">
             <div class="p-4 space-y-1 max-h-[80vh] overflow-y-auto">
                 <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('home')" data-key="home">首頁</button>
                 <button class="block w-full text-left py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800" onclick="navigate('events')" data-key="events">近期活動</button>
@@ -227,7 +222,7 @@
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-theme-400 to-theme-600 p-0.5 grayscale hover:grayscale-0 transition-all">
                     <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=fff&color=0d9488'" class="w-full h-full rounded-full object-cover bg-white">
                 </div>
-                <span class="font-bold text-lg text-slate-700 dark:text-slate-200 tracking-tight">PKSH Student Council</span>
+                <span class="font-bold text-lg text-slate-800 dark:text-white tracking-tight">PKSH Student Council</span>
             </div>
             
             <div class="flex justify-center items-center gap-6 mb-8">
@@ -253,7 +248,7 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // ============================================
-        // ⚠️ Config (請確保這裡填入你的 Firebase Config)
+        // ⚠️ Config
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyDWmy__e9_7YbhBTJNvLvGVglj-fOTFWMg",
