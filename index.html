@@ -8,7 +8,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -26,7 +26,7 @@
                             200: '#99f6e4',
                             300: '#5eead4',
                             400: '#2dd4bf',
-                            500: '#14b8a6', // Primary Brand Color
+                            500: '#14b8a6', // Primary Teal
                             600: '#0d9488', 
                             700: '#0f766e',
                             800: '#115e59',
@@ -34,22 +34,21 @@
                         }
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-up': 'fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         'float': 'float 6s ease-in-out infinite',
                     },
                     keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                        fadeUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
                         },
                         float: {
                             '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-8px)' },
+                            '50%': { transform: 'translateY(-10px)' },
                         }
                     },
                     boxShadow: {
                         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)'
                     }
                 }
             }
@@ -59,6 +58,22 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
+        /* 隱藏捲軸但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 玻璃擬態 */
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
         /* [核心] 導覽列防爆設定 - 強制橫向滑動不換行 */
         .nav-scroll-container {
             display: flex;
@@ -78,39 +93,33 @@
             white-space: nowrap; /* 禁止換行 */
         }
 
-        /* 玻璃擬態 */
-        .glass {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        .dark .glass {
-            background: rgba(15, 23, 42, 0.85);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        /* [修復] 跑馬燈動畫設定 */
+        .marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
+        .marquee-content { display: inline-block; animation: marquee 30s linear infinite; }
+        .marquee-content:hover { animation-play-state: paused; }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
 
-        /* 連結樣式優化 */
+        /* 連結樣式 */
         .news-content a:not(.btn-link) {
             color: #0d9488;
-            text-decoration: none;
-            border-bottom: 2px solid rgba(13, 148, 136, 0.3);
-            font-weight: 700;
-            transition: all 0.2s;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            font-weight: 600;
+            transition: color 0.2s;
         }
-        .news-content a:not(.btn-link):hover {
-            border-bottom-color: #0d9488;
-            background-color: rgba(13, 148, 136, 0.1);
-        }
+        .news-content a:not(.btn-link):hover { color: #0f766e; }
         .news-content a.btn-link { text-decoration: none !important; }
 
-        /* 卡片懸浮 */
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .hover-lift:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        /* 卡片互動 */
+        .hover-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .hover-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1); }
+
+        /* 照片遮罩 */
+        .gallery-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
         }
     </style>
 </head>
@@ -119,11 +128,7 @@
     <script>
         window.onerror = function(msg, url, line) {
             if (msg.includes('ResizeObserver')) return;
-            console.error("Global Error:", msg);
-            // 只有嚴重錯誤才彈窗，避免干擾體驗
-            if (msg.includes('is not defined') || msg.includes('null')) {
-                // alert("系統發生錯誤，請截圖回報管理員:\n" + msg);
-            }
+            // console.error("Error:", msg);
         };
     </script>
 
@@ -132,56 +137,56 @@
         <div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-200/20 rounded-full blur-[100px] dark:bg-blue-900/10"></div>
     </div>
 
-    <button onclick="window.scrollTo(0,0)" id="back-to-top" class="fixed bottom-6 right-6 z-50 bg-theme-600 text-white p-3.5 rounded-full shadow-xl opacity-0 pointer-events-none transition-all duration-300 hover:bg-theme-700 hover:scale-110 group">
+    <button onclick="window.scrollTo(0,0)" id="back-to-top" class="fixed bottom-8 right-8 z-50 bg-theme-600 text-white p-3 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 hover:bg-theme-700 hover:scale-110 border border-theme-100 dark:border-slate-700 group">
         <i data-lucide="arrow-up" class="w-6 h-6 group-hover:-translate-y-0.5 transition-transform"></i>
     </button>
 
-    <div class="relative z-20 bg-slate-900 text-white text-xs font-medium py-2.5 px-4 overflow-hidden tracking-wide">
+    <div class="relative z-20 bg-slate-900 text-white text-xs py-2.5 px-4 overflow-hidden">
         <div class="marquee-container flex items-center h-5">
-            <div class="marquee-content opacity-90" id="marquee-text">Loading...</div>
+            <div class="marquee-content font-mono tracking-wider opacity-90" id="marquee-text">Loading...</div>
         </div>
     </div>
 
     <header class="sticky top-0 z-40 glass shadow-sm transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20 gap-4">
                 
                 <a href="#" class="flex-shrink-0 flex items-center gap-3 group" onclick="navigate('home')">
-                    <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=0d9488&color=fff'" alt="Logo" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-700 group-hover:ring-theme-400 transition-all">
+                    <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=0d9488&color=fff'" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-700 group-hover:ring-theme-400 transition-all">
                     <div class="hidden sm:flex flex-col">
-                        <span class="text-lg font-black tracking-tight leading-none text-slate-900 dark:text-white">北港高中<span class="text-theme-500">學生會</span></span>
-                        <span class="text-[10px] font-bold text-slate-400 tracking-widest mt-0.5">PKSH STUDENT COUNCIL</span>
+                        <span class="text-lg font-bold tracking-tight leading-none text-slate-900 dark:text-white">北港高中<span class="text-theme-500">學生會</span></span>
+                        <span class="text-[10px] font-semibold text-slate-400 tracking-widest mt-0.5 uppercase">PKSH SU</span>
                     </div>
                 </a>
 
                 <div class="hidden xl:flex flex-1 min-w-0 items-center justify-center">
                     <nav class="nav-scroll-container">
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('home')" data-key="home">首頁</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('events')" data-key="events">近期活動</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('finance')" data-key="finance">財務</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('meetings')" data-key="meetings">會議</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('org')" data-key="org">組織</button>
-                        <button class="nav-btn ml-2 px-6 py-2.5 rounded-full bg-theme-600 text-white text-sm font-bold shadow-lg shadow-theme-500/30 hover:bg-theme-700 hover:-translate-y-0.5 transition-all" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('home')" data-key="home">首頁</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('events')" data-key="events">近期活動</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('finance')" data-key="finance">財務明細</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('org')" data-key="org">組織架構</button>
+                        <button class="nav-btn ml-2 px-5 py-2 rounded-full bg-theme-600 text-white text-sm font-bold shadow-md hover:bg-theme-700 hover:shadow-lg transition-all" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
                     </nav>
                 </div>
 
                 <div class="flex items-center space-x-2 flex-shrink-0">
-                    <button onclick="toggleSearch()" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
+                    <button onclick="toggleSearch()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
                         <i data-lucide="search" class="w-5 h-5"></i>
                     </button>
-                    <button onclick="toggleLang()" class="w-9 h-9 flex items-center justify-center text-xs font-bold border-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:border-theme-500 hover:text-theme-500 transition-colors">
+                    <button onclick="toggleLang()" class="w-8 h-8 flex items-center justify-center text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:border-theme-500 hover:text-theme-500 transition">
                         <span id="lang-display">EN</span>
                     </button>
-                    <button onclick="toggleDarkMode()" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-yellow-400 transition-colors">
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
                         <i data-lucide="moon" id="dark-icon" class="w-5 h-5"></i>
                         <i data-lucide="sun" id="light-icon" class="w-5 h-5 hidden"></i>
                     </button>
                     <button id="menu-button" class="xl:hidden p-2 text-slate-600 dark:text-slate-200">
-                        <i data-lucide="menu" class="w-7 h-7"></i>
+                        <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                 </div>
             </div>
@@ -229,7 +234,7 @@
     <footer class="bg-white/50 dark:bg-slate-900/50 backdrop-blur border-t border-slate-200 dark:border-slate-800 mt-auto py-12 relative z-10">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <div class="flex justify-center items-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-theme-400 to-theme-600 p-0.5 grayscale hover:grayscale-0 transition-all">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-theme-400 to-theme-600 p-0.5 grayscale hover:grayscale-0 transition-all">
                     <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=fff&color=0d9488'" class="w-full h-full rounded-full object-cover bg-white">
                 </div>
                 <span class="font-bold text-lg text-slate-800 dark:text-white tracking-tight">PKSH Student Council</span>
@@ -291,8 +296,8 @@
                     title_en: 'Student Union Link Tree', 
                     tag_zh: '公告', tag_en: 'Notice', 
                     date: '2026-01-01',
-                    content_zh: 'https://linktr.ee/pkshsu', 
-                    content_en: 'https://linktr.ee/pkshsu'
+                    content_zh: 'https://linktr.ee/pkshsu?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAb21jcAPC4qRleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA81NjcwNjczNDMzNTI0MjcAAaeHqdgPGR_-3r8dZkSNWf5ppn5iFKdKdgi26JypXij6uoGGQUrU6CP1NAXAig_aem_CFVbEBehnQMXtEfUGpJ7LA', 
+                    content_en: 'https://linktr.ee/pkshsu?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAb21jcAPC4qRleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA81NjcwNjczNDMzNTI0MjcAAaeHqdgPGR_-3r8dZkSNWf5ppn5iFKdKdgi26JypXij6uoGGQUrU6CP1NAXAig_aem_CFVbEBehnQMXtEfUGpJ7LA'
                 }
             ],
             // 已移除告白牆資料
