@@ -2,13 +2,13 @@
 <html lang="zh-Hant" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>北港高中學生會 | PKSH Student Council</title>
     <link rel="icon" type="image/png" href="大頭貼.jpg">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -26,7 +26,7 @@
                             200: '#99f6e4',
                             300: '#5eead4',
                             400: '#2dd4bf',
-                            500: '#14b8a6', // Primary Brand Color
+                            500: '#14b8a6', // Primary Teal
                             600: '#0d9488', 
                             700: '#0f766e',
                             800: '#115e59',
@@ -34,22 +34,21 @@
                         }
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-up': 'fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         'float': 'float 6s ease-in-out infinite',
                     },
                     keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                        fadeUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
                         },
                         float: {
                             '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-8px)' },
+                            '50%': { transform: 'translateY(-10px)' },
                         }
                     },
                     boxShadow: {
                         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)'
                     }
                 }
             }
@@ -59,6 +58,22 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
+        /* 隱藏捲軸但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 玻璃擬態 */
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
         /* [核心] 導覽列防爆設定 - 強制橫向滑動不換行 */
         .nav-scroll-container {
             display: flex;
@@ -78,63 +93,56 @@
             white-space: nowrap; /* 禁止換行 */
         }
 
-        /* 玻璃擬態 */
-        .glass {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        .dark .glass {
-            background: rgba(15, 23, 42, 0.85);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        /* [修復] 跑馬燈動畫設定 */
+        .marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
+        .marquee-content { display: inline-block; animation: marquee 30s linear infinite; }
+        .marquee-content:hover { animation-play-state: paused; }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
 
-        /* 連結樣式優化 */
+        /* 連結樣式 */
         .news-content a:not(.btn-link) {
             color: #0d9488;
-            text-decoration: none;
-            border-bottom: 2px solid rgba(13, 148, 136, 0.3);
-            font-weight: 700;
-            transition: all 0.2s;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            font-weight: 600;
+            transition: color 0.2s;
         }
-        .news-content a:not(.btn-link):hover {
-            border-bottom-color: #0d9488;
-            background-color: rgba(13, 148, 136, 0.1);
-        }
+        .news-content a:not(.btn-link):hover { color: #0f766e; }
         .news-content a.btn-link { text-decoration: none !important; }
 
-        /* 卡片懸浮 */
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .hover-lift:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
+        /* 卡片互動 */
+        .hover-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .hover-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1); }
 
-        /* [新增] Lightbox 導航按鈕樣式 */
+        /* 照片遮罩 */
+        .gallery-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+        }
+        
+        /* Lightbox Navigation Buttons */
         .lightbox-nav-btn {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
             background: rgba(255, 255, 255, 0.1);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 12px;
-            border-radius: 50%;
+            border: none;
+            padding: 1rem;
             cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 50%;
+            transition: all 0.3s;
             z-index: 60;
-            backdrop-filter: blur(4px);
         }
-        .lightbox-nav-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-50%) scale(1.1);
-        }
-        /* Mobile adjustment */
+        .lightbox-nav-btn:hover { background: rgba(255, 255, 255, 0.3); scale: 1.1; }
+        .lightbox-prev { left: 1rem; }
+        .lightbox-next { right: 1rem; }
         @media (max-width: 640px) {
-            .lightbox-nav-btn { padding: 8px; }
+            .lightbox-nav-btn { padding: 0.5rem; }
+            .lightbox-prev { left: 0.5rem; }
+            .lightbox-next { right: 0.5rem; }
         }
     </style>
 </head>
@@ -143,7 +151,6 @@
     <script>
         window.onerror = function(msg, url, line) {
             if (msg.includes('ResizeObserver')) return;
-            console.error("Global Error:", msg);
         };
     </script>
 
@@ -152,66 +159,54 @@
         <div class="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-200/20 rounded-full blur-[100px] dark:bg-blue-900/10"></div>
     </div>
 
-    <button onclick="window.scrollTo(0,0)" id="back-to-top" class="fixed bottom-6 right-6 z-50 bg-theme-600 text-white p-3.5 rounded-full shadow-xl opacity-0 pointer-events-none transition-all duration-300 hover:bg-theme-700 hover:scale-110 group">
+    <button onclick="window.scrollTo(0,0)" id="back-to-top" class="fixed bottom-8 right-8 z-50 bg-theme-600 text-white p-3 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 hover:bg-theme-700 hover:scale-110 border border-theme-100 dark:border-slate-700 group">
         <i data-lucide="arrow-up" class="w-6 h-6 group-hover:-translate-y-0.5 transition-transform"></i>
     </button>
 
-    <div class="relative z-20 bg-slate-900 text-white text-xs font-medium py-2.5 px-4 overflow-hidden tracking-wide flex justify-between items-center gap-4">
-        <div class="marquee-container flex items-center h-5 flex-grow overflow-hidden">
-            <div class="marquee-content opacity-90 whitespace-nowrap" id="marquee-text" style="font-size: 14px;">Loading...</div>
-        </div>
-        
-        <div class="flex items-center gap-1 bg-slate-800/80 rounded-lg p-0.5 flex-shrink-0 z-30 border border-slate-700">
-            <button onclick="adjustMarqueeSize(-1)" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors" title="縮小文字">
-                <span class="text-xs font-bold">A-</span>
-            </button>
-            <div class="w-px h-3 bg-slate-700"></div>
-            <button onclick="adjustMarqueeSize(1)" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors" title="放大文字">
-                <span class="text-xs font-bold">A+</span>
-            </button>
+    <div class="relative z-20 bg-slate-900 text-white text-xs py-2.5 px-4 overflow-hidden">
+        <div class="marquee-container flex items-center h-6"> <div class="marquee-content font-mono tracking-wider opacity-90 transition-all duration-300" id="marquee-text">Loading...</div>
         </div>
     </div>
 
     <header class="sticky top-0 z-40 glass shadow-sm transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20 gap-4">
-                
                 <a href="#" class="flex-shrink-0 flex items-center gap-3 group" onclick="navigate('home')">
-                    <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=0d9488&color=fff'" alt="Logo" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-700 group-hover:ring-theme-400 transition-all">
+                    <img src="大頭貼.jpg" onerror="this.src='https://ui-avatars.com/api/?name=PKSH&background=0d9488&color=fff'" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-700 group-hover:ring-theme-400 transition-all">
                     <div class="hidden sm:flex flex-col">
-                        <span class="text-lg font-black tracking-tight leading-none text-slate-900 dark:text-white">北港高中<span class="text-theme-500">學生會</span></span>
-                        <span class="text-[10px] font-bold text-slate-400 tracking-widest mt-0.5 uppercase">PKSH STUDENT COUNCIL</span>
+                        <span class="text-lg font-bold tracking-tight leading-none text-slate-900 dark:text-white">北港高中<span class="text-theme-500">學生會</span></span>
+                        <span class="text-[10px] font-semibold text-slate-400 tracking-widest mt-0.5 uppercase">PKSH SU</span>
                     </div>
                 </a>
 
                 <div class="hidden xl:flex flex-1 min-w-0 items-center justify-center">
                     <nav class="nav-scroll-container">
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('home')" data-key="home">首頁</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('events')" data-key="events">近期活動</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('finance')" data-key="finance">財務</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('meetings')" data-key="meetings">會議</button>
-                        <button class="nav-btn px-4 py-2 text-sm font-bold rounded-full transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-theme-600 dark:hover:text-theme-400" onclick="navigate('org')" data-key="org">組織</button>
-                        <button class="nav-btn ml-2 px-6 py-2.5 rounded-full bg-theme-600 text-white text-sm font-bold shadow-lg shadow-theme-500/30 hover:bg-theme-700 hover:-translate-y-0.5 transition-all" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('home')" data-key="home">首頁</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('events')" data-key="events">近期活動</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('gallery')" data-key="gallery">活動花絮</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('clubs')" data-key="clubs">社團專區</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('mailboxes')" data-key="mailboxes">信箱專區</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('downloads')" data-key="downloads">資料下載</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('finance')" data-key="finance">財務明細</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('meetings')" data-key="meetings">會議紀錄</button>
+                        <button class="nav-btn px-4 py-2 text-sm font-medium rounded-full transition-colors" onclick="navigate('org')" data-key="org">組織架構</button>
+                        <button class="nav-btn ml-2 px-5 py-2 rounded-full bg-theme-600 text-white text-sm font-bold shadow-md hover:bg-theme-700 hover:shadow-lg transition-all" onclick="navigate('contact')" data-key="contact">聯絡我們</button>
                     </nav>
                 </div>
 
                 <div class="flex items-center space-x-2 flex-shrink-0">
-                    <button onclick="toggleSearch()" class="p-2.5 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
+                    <button onclick="toggleSearch()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
                         <i data-lucide="search" class="w-5 h-5"></i>
                     </button>
-                    <button onclick="toggleLang()" class="w-8 h-8 flex items-center justify-center text-xs font-bold border-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:border-theme-500 hover:text-theme-500 transition">
+                    <button onclick="toggleLang()" class="w-8 h-8 flex items-center justify-center text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:border-theme-500 hover:text-theme-500 transition">
                         <span id="lang-display">EN</span>
                     </button>
-                    <button onclick="toggleDarkMode()" class="p-2.5 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition">
                         <i data-lucide="moon" id="dark-icon" class="w-5 h-5"></i>
                         <i data-lucide="sun" id="light-icon" class="w-5 h-5 hidden"></i>
                     </button>
                     <button id="menu-button" class="xl:hidden p-2 text-slate-600 dark:text-slate-200">
-                        <i data-lucide="menu" class="w-7 h-7"></i>
+                        <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                 </div>
             </div>
@@ -243,23 +238,23 @@
         <div id="search-results" class="w-full max-w-2xl mt-4 space-y-2 overflow-y-auto max-h-[60vh] pb-10"></div>
     </div>
 
-    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none" onclick="closeLightbox()">
-        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white/70 hover:text-white z-50 transition-colors bg-white/10 p-2 rounded-full backdrop-blur-sm">
+    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none" tabindex="0">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white/70 hover:text-white z-50 transition-colors bg-white/10 p-2 rounded-full">
             <i data-lucide="x" class="w-8 h-8"></i>
         </button>
 
-        <button onclick="event.stopPropagation(); navigateLightbox(-1)" class="lightbox-nav-btn left-4 sm:left-8">
+        <button class="lightbox-nav-btn lightbox-prev" onclick="changeLightbox(-1)">
             <i data-lucide="chevron-left" class="w-8 h-8"></i>
+        </button>
+        <button class="lightbox-nav-btn lightbox-next" onclick="changeLightbox(1)">
+            <i data-lucide="chevron-right" class="w-8 h-8"></i>
         </button>
 
         <div class="max-w-6xl w-full max-h-screen flex flex-col items-center justify-center relative">
-            <img id="lightbox-img" src="" class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl transform scale-95 transition-transform duration-300 select-none" onclick="event.stopPropagation()">
+            <img id="lightbox-img" src="" class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl transform scale-95 transition-transform duration-300" onclick="event.stopPropagation()">
             <p id="lightbox-caption" class="text-white/90 mt-4 text-center text-lg font-medium tracking-wide"></p>
+            <p id="lightbox-counter" class="text-white/50 text-sm mt-1"></p>
         </div>
-
-        <button onclick="event.stopPropagation(); navigateLightbox(1)" class="lightbox-nav-btn right-4 sm:right-8">
-            <i data-lucide="chevron-right" class="w-8 h-8"></i>
-        </button>
     </div>
 
     <main class="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 flex-grow w-full relative z-10 animate-fade-in" id="app-container">
@@ -334,12 +329,11 @@
                     content_en: 'https://linktr.ee/pkshsu?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAb21jcAPC4qRleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA81NjcwNjczNDMzNTI0MjcAAaeHqdgPGR_-3r8dZkSNWf5ppn5iFKdKdgi26JypXij6uoGGQUrU6CP1NAXAig_aem_CFVbEBehnQMXtEfUGpJ7LA'
                 }
             ],
-            // 已移除告白牆資料
             events: [],
             finance: [],
-            // [NEW] 預設照片
+            // [NEW] 預設照片 (相簿功能升級)
             photos: [
-                { url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80', title_zh: '校園一隅 (範例)', title_en: 'Campus Corner' }
+                { url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80', title_zh: '校園一隅 (範例)', title_en: 'Campus Corner', album: '校園生活' }
             ],
             clubs: [
                 { name_zh: '熱舞社', name_en: 'Pop Dance Club', category: 'Dance', emoji: '💃', ig: 'https://www.instagram.com/pkdc.20_flaming/' },
@@ -347,41 +341,25 @@
                 { name_zh: '童軍社', name_en: 'Scout Club', category: 'Service', emoji: '🏕️', ig: 'https://www.instagram.com/pksh_circus_scout/' },
             ],
             orgLeaders: [
-                { roleKey: 'role_pres', icon: '👑', name_zh: '張佾傑', name_en: 'CHANG, YI-CHIEH', desc_zh: '對內綜理內務，主持召開會員代表大會，對外代表本會，配合學校推展各項活動並負責綜理本會事宜。', desc_en: 'Manages internal affairs.' },
-                { roleKey: 'role_vp', icon: '⭐', name_zh: '王雅琝', name_en: 'WANG, YA-WEN', desc_zh: '協助會長執行本會事宜，會長因故缺席時代理之。', desc_en: 'Assists the President.' }
+                { roleKey: 'role_pres', icon: '👑', name_zh: '張佾傑', name_en: 'CHANG, YI-CHIEH', desc_zh: '對內綜理內務，主持召開會員代表大會，對外代表本會，配合學校推展各項活動並負責綜理本會事宜。', desc_en: 'Manages internal affairs.'},
+                { roleKey: 'role_vp', icon: '⭐', name_zh: '王雅琝', name_en: 'WANG, YA-WEN', desc_zh: '協助會長執行本會事宜，會長因故缺席時代理之。', desc_en: 'Assists the President.'}
             ],
             orgDepts: [
-                { roleKey: 'role_act', icon: '🎉', chief_zh: '鄭雨涵', chief_en: 'CHENG, YU-HAN', desc_zh: '負責策劃及推行本會所舉辦之各類活動。', desc_en: 'Activities planning.' },
-                { roleKey: 'role_art', icon: '🎨', chief_zh: '朱守晴', chief_en: 'CHU, SHOU-CHING', deputy_zh: '黃瓊美', deputy_en: 'HUANG, CHIUNG-MEI', desc_zh: '負責本會學藝活動、海報、壁報設計。', desc_en: 'Art and Design.' },
-                { roleKey: 'role_admin', icon: '📝', chief_zh: '蔡秉宏', chief_en: 'TSAI, PING-HUNG', deputy_zh: '顏子䒟', deputy_en: 'YEN, TZU-TAN', desc_zh: '負責本會開會通告、會議記錄。', desc_en: 'Administration.' },
-                { roleKey: 'role_ga', icon: '💰', chief_zh: '趙芝翊', chief_en: 'CHAO, CHIH-YI', desc_zh: '負責本會經費收支，財產保管。', desc_en: 'General Affairs.' },
-                { roleKey: 'role_pr', icon: '📢', chief_zh: '許雅琳', chief_en: 'HSU, YA-LIN', desc_zh: '負責本會會議之聯絡及舉辦活動之聯繫。', desc_en: 'Public Relations.' },
-                { roleKey: 'role_mobile', icon: '🛠️', chief_zh: '劉乙葭', chief_en: 'LIU, YI-CHIA', desc_zh: '負責本會舉辦之場地佈置。', desc_en: 'Logistics.' }
+                { roleKey: 'role_act', icon: '🎉', chief_zh: '鄭雨涵', chief_en: 'CHENG, YU-HAN', desc_zh: '負責策劃及推行本會所舉辦之各類活動。', desc_en: 'Activities planning.'},
+                { roleKey: 'role_art', icon: '🎨', chief_zh: '朱守晴', chief_en: 'CHU, SHOU-CHING', deputy_zh: '黃瓊美', deputy_en: 'HUANG, CHIUNG-MEI', desc_zh: '負責本會學藝活動、海報、壁報設計。', desc_en: 'Art and Design.'},
+                { roleKey: 'role_admin', icon: '📝', chief_zh: '蔡秉宏', chief_en: 'TSAI, PING-HUNG', deputy_zh: '顏子䒟', deputy_en: 'YEN, TZU-TAN', desc_zh: '負責本會開會通告、會議記錄。', desc_en: 'Administration.'},
+                { roleKey: 'role_ga', icon: '💰', chief_zh: '趙芝翊', chief_en: 'CHAO, CHIH-YI', desc_zh: '負責本會經費收支，財產保管。', desc_en: 'General Affairs.'},
+                { roleKey: 'role_pr', icon: '📢', chief_zh: '許雅琳', chief_en: 'HSU, YA-LIN', desc_zh: '負責本會會議之聯絡及舉辦活動之聯繫。', desc_en: 'Public Relations.'},
+                { roleKey: 'role_mobile', icon: '🛠️', chief_zh: '劉乙葭', chief_en: 'LIU, YI-CHIA', desc_zh: '負責本會舉辦之場地佈置。', desc_en: 'Logistics.'}
             ],
             meetings: [],
             downloads: []
         };
-
         let APP_DATA = JSON.parse(JSON.stringify(STATIC_DATA));
         let SYSTEM_SETTINGS = {
-            marquee: '📢 歡迎來到北港高中學生會官方網站！'
+            marquee: '📢 歡迎來到北港高中學生會官方網站！',
+            marqueeSize: 'text-xs' // [NEW] 預設字體大小
         };
-
-        // [NEW] Global state for lightbox navigation
-        let currentLightboxIndex = 0;
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        const APP_STATE = {
-            view: 'home',
-            lang: 'zh',
-            darkMode: false,
-            eventFilter: 'All',
-            user: null, 
-            adminTab: 'news', 
-            isLoading: false
-        };
-
         const I18N = {
             zh: {
                 home: '首頁', events: '近期活動', mailboxes: '信箱專區', clubs: '社團專區', downloads: '資料下載',
@@ -432,6 +410,21 @@
                 admin_finance: 'Manage Finance', admin_meetings: 'Manage Minutes', admin_downloads: 'Manage Downloads'
             }
         };
+        const APP_STATE = {
+            view: 'home',
+            lang: 'zh',
+            darkMode: false,
+            eventFilter: 'All',
+            user: null, 
+            adminTab: 'news', 
+            isLoading: false,
+            // [NEW] Gallery State
+            galleryView: 'albums', // 'albums' or 'photos'
+            activeAlbum: null,
+            // [NEW] Lightbox State
+            lightboxList: [],
+            lightboxIndex: 0
+        };
 
         const t = (key) => I18N[APP_STATE.lang][key] || key;
         const isEn = () => APP_STATE.lang === 'en';
@@ -443,8 +436,7 @@
         };
 
         function formatDateHelper(dateStr) {
-            let month = '??';
-            let day = '??';
+            let month = '??'; let day = '??';
             if (!dateStr) return { month, day };
             try {
                 const parts = dateStr.replace(/-/g, '/').split('/');
@@ -487,15 +479,16 @@
                     const d = settingsSnap.data();
                     if(Array.isArray(d.marquee)) SYSTEM_SETTINGS.marquee = d.marquee;
                     else SYSTEM_SETTINGS.marquee = d.marquee || SYSTEM_SETTINGS.marquee;
+                    // [NEW] Load Font Size
+                    if(d.marqueeSize) SYSTEM_SETTINGS.marqueeSize = d.marqueeSize;
                 }
                 updateMarquee();
-
                 const qNews = query(collection(db, "announcements"), orderBy("date", "desc"));
                 const snapNews = await getDocs(qNews);
                 const fetchedNews = [];
                 snapNews.forEach(doc => { fetchedNews.push({ id: doc.id, ...doc.data() }); });
                 if(fetchedNews.length > 0) APP_DATA.announcements = [...fetchedNews, ...STATIC_DATA.announcements];
-
+                
                 const qEvents = query(collection(db, "events"), orderBy("date", "asc"));
                 const snapEvents = await getDocs(qEvents);
                 const fetchedEvents = [];
@@ -611,7 +604,8 @@
                     tag_zh: '公告', tag_en: 'Notice', date, timestamp: serverTimestamp()
                 });
                 Swal.fire('新增成功', '', 'success'); await loadDataFromFirebase();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error');
+            }
         }
 
         window.addEvent = async () => {
@@ -629,7 +623,8 @@
                     type, link: link || '', timestamp: serverTimestamp()
                 });
                 Swal.fire('新增成功', '', 'success'); await loadDataFromFirebase();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error');
+            }
         }
 
         window.addFinance = async () => {
@@ -644,7 +639,8 @@
                     date, item_zh: item, item_en: item, amount, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增財務', '', 'success'); await loadDataFromFirebase(); render(); 
-            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error');
+            }
         }
 
         window.addMeeting = async () => {
@@ -657,7 +653,8 @@
                     date, title_zh: title, title_en: title, file: link || '#', timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增會議記錄', '', 'success'); await loadDataFromFirebase(); render();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error');
+            }
         }
 
         window.addDownload = async () => {
@@ -671,31 +668,45 @@
                     date, title_zh: title, title_en: title, file: link, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增下載', '', 'success'); await loadDataFromFirebase(); render();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error');
+            }
         }
 
         window.addPhoto = async () => {
             const url = document.getElementById('photo-url').value;
             const title_zh = document.getElementById('photo-title-zh').value;
             const title_en = document.getElementById('photo-title-en').value;
+            const album = document.getElementById('photo-album').value; // [NEW] Album Field
             if(!url) return Swal.fire('請輸入圖片網址', '', 'warning');
             try {
                 await addDoc(collection(db, "photos"), {
-                    url, title_zh: title_zh || '活動照片', title_en: title_en || 'Activity Photo', timestamp: serverTimestamp()
+                    url, 
+                    title_zh: title_zh || '活動照片', 
+                    title_en: title_en || 'Activity Photo', 
+                    album: album || '未分類', // Default album
+                    timestamp: serverTimestamp()
                 });
                 Swal.fire('新增成功', '', 'success'); await loadDataFromFirebase();
-            } catch(e) { Swal.fire('錯誤', e.message, 'error'); }
+            } catch(e) { Swal.fire('錯誤', e.message, 'error');
+            }
         }
 
         window.saveSystemSettings = async () => {
             const marqueeText = document.getElementById('system-marquee').value;
             const marqueeArray = marqueeText.split('|').map(s => s.trim()).filter(s => s);
+            const marqueeSize = document.getElementById('system-marquee-size').value; // [NEW] Size value
+
             try {
-                await setDoc(doc(db, "settings", "config"), { marquee: marqueeArray.length > 1 ? marqueeArray : marqueeText });
+                await setDoc(doc(db, "settings", "config"), { 
+                    marquee: marqueeArray.length > 1 ? marqueeArray : marqueeText,
+                    marqueeSize: marqueeSize 
+                });
                 SYSTEM_SETTINGS.marquee = marqueeArray.length > 1 ? marqueeArray : marqueeText;
+                SYSTEM_SETTINGS.marqueeSize = marqueeSize;
                 updateMarquee();
-                Swal.fire('設定已儲存', '跑馬燈已更新', 'success');
-            } catch(e) { Swal.fire('儲存失敗', e.message, 'error'); }
+                Swal.fire('設定已儲存', '系統設定已更新', 'success');
+            } catch(e) { Swal.fire('儲存失敗', e.message, 'error');
+            }
         }
 
         window.deleteItem = async (collectionName, id) => {
@@ -705,22 +716,18 @@
                 try {
                     await deleteDoc(doc(db, collectionName, id));
                     Swal.fire('已刪除', '', 'success'); await loadDataFromFirebase(); render();
-                } catch(e) { Swal.fire('刪除失敗', '無法刪除靜態資料或權限不足', 'error'); }
+                } catch(e) { Swal.fire('刪除失敗', '無法刪除靜態資料或權限不足', 'error');
+                }
             }
         }
 
         // --- Logic ---
-        // [新增] Marquee Font Size Logic
-        window.adjustMarqueeSize = (delta) => {
-            const marquee = document.getElementById('marquee-text');
-            const currentSize = parseInt(window.getComputedStyle(marquee).fontSize);
-            const newSize = Math.max(10, Math.min(32, currentSize + delta * 2)); // Limit between 10px and 32px
-            marquee.style.fontSize = `${newSize}px`;
-        };
-
         function updateMarquee() {
             const el = document.getElementById('marquee-text');
             if(!el) return;
+            // [NEW] Apply Font Size
+            el.className = `marquee-content font-mono tracking-wider opacity-90 transition-all duration-300 ${SYSTEM_SETTINGS.marqueeSize || 'text-xs'}`;
+
             let content = '';
             if (Array.isArray(SYSTEM_SETTINGS.marquee)) {
                 content = SYSTEM_SETTINGS.marquee.join(' &nbsp;&nbsp;&nbsp;&nbsp;✦&nbsp;&nbsp;&nbsp;&nbsp; ');
@@ -779,73 +786,65 @@
             }
         };
 
-        // [MODIFIED] Lightbox Logic (Index Tracking + Nav)
-        window.openLightbox = (url, caption) => {
+        // --- Lightbox with Navigation ---
+        window.openLightbox = (index, photoList = null) => {
+            if (!photoList) {
+                // If specific list not provided, assume all photos
+                 APP_STATE.lightboxList = APP_DATA.photos;
+            } else {
+                APP_STATE.lightboxList = photoList;
+            }
+            
+            // Find index if passed as URL string (legacy support) or use direct index
+            if (typeof index === 'string') {
+                 APP_STATE.lightboxIndex = APP_STATE.lightboxList.findIndex(p => p.url === index);
+            } else {
+                 APP_STATE.lightboxIndex = index;
+            }
+
+            if(APP_STATE.lightboxIndex === -1) APP_STATE.lightboxIndex = 0;
+
+            updateLightboxContent();
+            
             const modal = document.getElementById('lightbox-modal');
+            modal.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            modal.focus(); // Focus for keyboard events
+        };
+
+        function updateLightboxContent() {
+            const p = APP_STATE.lightboxList[APP_STATE.lightboxIndex];
+            if(!p) return;
             const img = document.getElementById('lightbox-img');
             const text = document.getElementById('lightbox-caption');
+            const counter = document.getElementById('lightbox-counter');
             
-            // Find index
-            const photos = APP_DATA.photos || [];
-            currentLightboxIndex = photos.findIndex(p => p.url === url);
+            img.src = p.url;
+            text.innerText = val(p, 'title');
+            counter.innerText = `${APP_STATE.lightboxIndex + 1} / ${APP_STATE.lightboxList.length}`;
+        }
 
-            img.src = url;
-            text.innerText = caption;
-            modal.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-        };
-        
+        window.changeLightbox = (direction) => {
+            event.stopPropagation();
+            let newIndex = APP_STATE.lightboxIndex + direction;
+            if (newIndex < 0) newIndex = APP_STATE.lightboxList.length - 1;
+            if (newIndex >= APP_STATE.lightboxList.length) newIndex = 0;
+            APP_STATE.lightboxIndex = newIndex;
+            updateLightboxContent();
+        }
+
         window.closeLightbox = () => {
             const modal = document.getElementById('lightbox-modal');
             modal.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => modal.classList.add('hidden'), 300);
         };
 
-        // [NEW] Navigate Lightbox
-        window.navigateLightbox = (direction) => {
-            const photos = APP_DATA.photos || [];
-            if (photos.length === 0) return;
-            
-            currentLightboxIndex = (currentLightboxIndex + direction + photos.length) % photos.length;
-            const p = photos[currentLightboxIndex];
-            
-            // Animation reset
-            const img = document.getElementById('lightbox-img');
-            img.style.opacity = 0;
-            
-            setTimeout(() => {
-                img.src = p.url;
-                document.getElementById('lightbox-caption').innerText = val(p, 'title');
-                img.onload = () => { img.style.opacity = 1; };
-            }, 150);
-        };
-
-        // [NEW] Keyboard Support for Lightbox
+        // Lightbox Keyboard Support
         document.addEventListener('keydown', (e) => {
-            const modal = document.getElementById('lightbox-modal');
-            if (modal.classList.contains('hidden')) return;
-
+            if (document.getElementById('lightbox-modal').classList.contains('hidden')) return;
             if (e.key === 'Escape') closeLightbox();
-            if (e.key === 'ArrowLeft') navigateLightbox(-1);
-            if (e.key === 'ArrowRight') navigateLightbox(1);
+            if (e.key === 'ArrowLeft') changeLightbox(-1);
+            if (e.key === 'ArrowRight') changeLightbox(1);
         });
-
-        // [NEW] Touch Swipe Support for Lightbox
-        document.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        });
-
-        document.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        });
-
-        function handleSwipe() {
-            const modal = document.getElementById('lightbox-modal');
-            if (modal.classList.contains('hidden')) return;
-            
-            if (touchStartX - touchEndX > 50) navigateLightbox(1); // Swipe Left -> Next
-            if (touchEndX - touchStartX > 50) navigateLightbox(-1); // Swipe Right -> Prev
-        }
 
         // --- Render Functions ---
         function renderHome() {
@@ -860,15 +859,13 @@
                     ${item.content_zh ? `<div class="text-gray-600 dark:text-gray-300 overflow-x-auto news-content leading-relaxed relative z-10">${formatContent(val(item, 'content'))}</div>` : ''}
                 </div>
             `).join('');
-
             // 右側功能：活動倒數 + 最新照片預覽
             let rightSideHtml = '';
-            
             // 1. 活動倒數
             let nextEventHtml = `<div class="p-8 text-center text-gray-400 dark:text-gray-500 font-medium">暫無即將到來的活動</div>`;
             const futureEvents = APP_DATA.events.filter(e => new Date(e.date) >= new Date());
             if (futureEvents.length > 0) {
-                const nextEv = futureEvents[0]; 
+                const nextEv = futureEvents[0];
                 const daysLeft = Math.ceil((new Date(nextEv.date) - new Date()) / (1000 * 60 * 60 * 24));
                 nextEventHtml = `
                     <div class="text-center relative z-10">
@@ -888,13 +885,12 @@
             if(APP_DATA.photos && APP_DATA.photos.length > 0) {
                 const p = APP_DATA.photos[0];
                 latestPhotoHtml = `
-                    <div class="bg-white dark:bg-gray-800 p-1 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 mt-8 group cursor-pointer hover:shadow-2xl transition-all duration-300" onclick="navigate('gallery')">
+                    <div class="bg-white dark:bg-gray-800 p-1 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 mt-8 group cursor-pointer" onclick="navigate('gallery')">
                         <div class="relative overflow-hidden rounded-[20px] aspect-video">
                             <img src="${p.url}" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700">
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
                                 <span class="text-white font-bold flex items-center gap-2"><i data-lucide="image" class="w-5 h-5"></i> 查看活動花絮</span>
                             </div>
-                            <div class="absolute bottom-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">Latest Photo</div>
                         </div>
                     </div>
                 `;
@@ -950,26 +946,84 @@
             `;
         }
 
+        // [MODIFIED] Render Gallery to support Albums
         function renderGallery() {
+            // Group photos by Album
             const photos = APP_DATA.photos;
-            const galleryHtml = photos.length > 0 ? photos.map(p => `
-                <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700" onclick="openLightbox('${p.url}', '${val(p, 'title')}')">
-                    <img src="${p.url}" alt="${val(p, 'title')}" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700 ease-out">
-                    <div class="gallery-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
-                        <p class="text-white font-bold text-lg transform translate-y-4 group-hover:translate-y-0 transition duration-300">${val(p, 'title')}</p>
-                    </div>
-                </div>
-            `).join('') : `<p class="col-span-full text-center text-gray-500 py-20 font-medium text-lg">目前沒有活動照片，敬請期待！</p>`;
+            
+            // View 1: Albums List
+            if (APP_STATE.galleryView === 'albums') {
+                const albumsMap = {};
+                photos.forEach(p => {
+                    const albumName = p.album || '未分類';
+                    if (!albumsMap[albumName]) albumsMap[albumName] = [];
+                    albumsMap[albumName].push(p);
+                });
 
-            return `
-                <div class="text-center mb-10 animate-fade-in">
-                    <h1 class="text-4xl font-black mb-2 text-theme-600 dark:text-theme-400 tracking-tight">${t('galleryTitle')}</h1>
-                    <div class="w-20 h-1.5 bg-theme-200 dark:bg-theme-800 rounded-full mx-auto"></div>
-                </div>
-                <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 animate-fade-in px-2">
-                    ${galleryHtml}
-                </div>
-            `;
+                const albumsHtml = Object.keys(albumsMap).map(name => {
+                    const coverPhoto = albumsMap[name][0];
+                    const count = albumsMap[name].length;
+                    return `
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden cursor-pointer group hover:shadow-2xl transition-all" onclick="openAlbum('${name}')">
+                            <div class="aspect-video relative overflow-hidden">
+                                <img src="${coverPhoto.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+                                <div class="absolute bottom-4 left-4 text-white">
+                                    <h3 class="font-bold text-xl shadow-black drop-shadow-md">${name}</h3>
+                                    <p class="text-xs opacity-80 mt-1 bg-black/30 px-2 py-0.5 rounded-full inline-block">${count} 張照片</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                if (photos.length === 0) return `<div class="text-center py-20 text-gray-400">目前沒有照片</div>`;
+
+                return `
+                    <div class="text-center mb-10 animate-fade-in">
+                        <h1 class="text-4xl font-black mb-2 text-theme-600 dark:text-theme-400 tracking-tight">${t('galleryTitle')}</h1>
+                        <p class="text-gray-500">點擊相簿查看更多精彩瞬間</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                        ${albumsHtml}
+                    </div>
+                `;
+            } 
+            // View 2: Photos inside Album
+            else {
+                const currentAlbumName = APP_STATE.activeAlbum;
+                const albumPhotos = photos.filter(p => (p.album || '未分類') === currentAlbumName);
+                
+                // Keep global references for lightbox to work within this context
+                const photoHtml = albumPhotos.map((p, idx) => `
+                    <div class="break-inside-avoid mb-6 cursor-zoom-in group relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700" onclick="openLightbox(${idx}, APP_DATA.photos.filter(p => (p.album || '未分類') === '${currentAlbumName}'))">
+                        <img src="${p.url}" alt="${val(p, 'title')}" class="w-full h-auto object-cover transform group-hover:scale-105 transition duration-700 ease-out">
+                        <div class="gallery-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
+                            <p class="text-white font-bold text-lg transform translate-y-4 group-hover:translate-y-0 transition duration-300">${val(p, 'title')}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="mb-8 flex items-center animate-fade-in">
+                        <button onclick="APP_STATE.galleryView='albums'; render()" class="flex items-center gap-2 text-gray-500 hover:text-theme-600 transition-colors font-bold bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
+                            <i data-lucide="arrow-left" class="w-5 h-5"></i> 返回相簿列表
+                        </button>
+                    </div>
+                    <div class="text-center mb-10 animate-fade-in">
+                        <h1 class="text-3xl font-black mb-2 dark:text-white tracking-tight">${currentAlbumName}</h1>
+                    </div>
+                    <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 animate-fade-in px-2">
+                        ${photoHtml}
+                    </div>
+                `;
+            }
+        }
+        
+        window.openAlbum = (name) => {
+            APP_STATE.activeAlbum = name;
+            APP_STATE.galleryView = 'photos';
+            render();
         }
 
         function renderEvents() {
@@ -1064,7 +1118,7 @@
                     <p class="text-gray-500 max-w-2xl mx-auto">學生會由會長與副會長領導，下設六大職能部門，各司其職，共同為全校同學服務。</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16 animate-fade-in">${leadersHtml}</div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr animate-fade-in delay-100">${deptsHtml}</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr animate-fade-in">${deptsHtml}</div>
             `;
         }
 
@@ -1077,7 +1131,6 @@
                     <td class="py-4 px-6 text-right font-mono"><span class="${f.amount > 0 ? 'text-green-600 bg-green-50 dark:bg-green-900/30 ring-1 ring-green-200 dark:ring-green-800' : 'text-red-600 bg-red-50 dark:bg-red-900/30 ring-1 ring-red-200 dark:ring-red-800'} font-bold px-3 py-1 rounded-md text-sm">${f.amount > 0 ? '+' : ''}${f.amount.toLocaleString()}</span></td>
                 </tr>
             `).join('');
-            
             return `
                 <div class="max-w-4xl mx-auto">
                     <h1 class="text-3xl font-black mb-8 text-theme-600 dark:text-theme-400 text-center tracking-tight">${t('financeTitle')}</h1>
@@ -1178,6 +1231,45 @@
                 </div>`;
         }
 
+        function renderContact() {
+            return `
+                <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-theme-100 dark:bg-theme-900/30 rounded-full blur-2xl"></div>
+                    
+                    <h1 class="text-3xl font-black mb-8 text-center text-theme-600 dark:text-theme-400 tracking-tight relative z-10">${t('contact')}</h1>
+                    <div class="space-y-4 relative z-10">
+                        <a href="https://www.instagram.com/pksh.su/" target="_blank" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 border border-gray-100 dark:border-gray-600 rounded-2xl hover:border-pink-300 transition-all group shadow-sm hover:shadow-md">
+                            <div class="bg-white p-3 rounded-xl shadow-sm group-hover:scale-110 transition-transform mr-5">
+                                <i data-lucide="instagram" class="w-8 h-8 text-pink-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl dark:text-white group-hover:text-pink-500 transition-colors">Instagram</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mt-0.5">@pksh.su</p>
+                            </div>
+                            <i data-lucide="arrow-right" class="ml-auto w-5 h-5 text-gray-300 group-hover:text-pink-500 group-hover:translate-x-1 transition-all"></i>
+                        </a>
+                        
+                        <a href="mailto:pkshsu@pksh.ylc.edu.tw" class="flex items-center p-5 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 border border-gray-100 dark:border-gray-600 rounded-2xl hover:border-theme-300 transition-all group shadow-sm hover:shadow-md">
+                            <div class="bg-white p-3 rounded-xl shadow-sm group-hover:scale-110 transition-transform mr-5">
+                                <i data-lucide="mail" class="w-8 h-8 text-theme-500"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl dark:text-white group-hover:text-theme-600 transition-colors">Email</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mt-0.5">pkshsu@pksh.ylc.edu.tw</p>
+                            </div>
+                            <i data-lucide="arrow-right" class="ml-auto w-5 h-5 text-gray-300 group-hover:text-theme-500 group-hover:translate-x-1 transition-all"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="pt-8 mt-8 border-t border-gray-100 dark:border-gray-700 text-center">
+                        <button onclick="navigate('admin')" class="text-xs font-bold text-gray-400 hover:text-theme-500 flex items-center justify-center transition mx-auto gap-1 py-2 px-4 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <i data-lucide="shield" class="w-3 h-3"></i> ${t('admin')}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
         function renderMeetings() {
             const list = APP_DATA.meetings.length ? APP_DATA.meetings.map(m => `
                 <div class="flex items-center justify-between bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all cursor-pointer border border-gray-100 dark:border-gray-700 hover:border-theme-300 group">
@@ -1230,7 +1322,7 @@
                 const inputStyle = "w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-theme-500 focus:outline-none transition-shadow";
                 const labelStyle = "block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1";
                 const btnStyle = "bg-theme-500 hover:bg-theme-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all active:scale-95 w-full md:w-auto";
-
+                
                 if (tab === 'news') {
                     const list = APP_DATA.announcements.filter(a => a.id && !a.id.startsWith('static_')).map(a => `
                          <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-700 group hover:border-theme-200 transition mb-3">
@@ -1300,7 +1392,10 @@
                         <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
                             <div class="flex items-center gap-4">
                                 <img src="${p.url}" class="w-12 h-12 object-cover rounded-lg">
-                                <p class="font-bold dark:text-white text-sm truncate w-32">${p.title_zh}</p>
+                                <div>
+                                    <p class="font-bold dark:text-white text-sm truncate w-32">${p.title_zh}</p>
+                                    <p class="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-800 px-1 rounded inline-block">${p.album || '未分類'}</p>
+                                </div>
                             </div>
                             <button onclick="deleteItem('photos', '${p.id}')" class="text-gray-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
@@ -1313,6 +1408,7 @@
                                     <div><label class="${labelStyle}">圖片網址 (URL)</label><input id="photo-url" class="${inputStyle}" placeholder="https://..."></div>
                                     <div><label class="${labelStyle}">中文標題</label><input id="photo-title-zh" class="${inputStyle}"></div>
                                     <div><label class="${labelStyle}">English Title</label><input id="photo-title-en" class="${inputStyle}"></div>
+                                    <div><label class="${labelStyle}">相簿名稱 (Album)</label><input id="photo-album" class="${inputStyle}" placeholder="ex: 校慶運動會"></div>
                                     <button onclick="addPhoto()" class="${btnStyle} mt-2 w-full">新增照片</button>
                                 </div>
                             </div>
@@ -1406,6 +1502,8 @@
                     let marqueeVal = '';
                     if(Array.isArray(SYSTEM_SETTINGS.marquee)) marqueeVal = SYSTEM_SETTINGS.marquee.join(' | ');
                     else marqueeVal = SYSTEM_SETTINGS.marquee;
+                    
+                    const currentSize = SYSTEM_SETTINGS.marqueeSize || 'text-xs';
 
                     contentHtml = `
                         <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 max-w-2xl mx-auto">
@@ -1415,6 +1513,21 @@
                                 <label class="${labelStyle}">首頁跑馬燈內容</label>
                                 <textarea id="system-marquee" rows="4" class="${inputStyle}" placeholder="輸入文字... 若要分段顯示，請使用 | 符號分隔">${marqueeVal}</textarea>
                                 <p class="text-xs text-gray-400 mt-2 ml-1"><i data-lucide="info" class="inline w-3 h-3"></i> 提示：使用 " | " 符號來分隔多段跑馬燈訊息。</p>
+                            </div>
+                            
+                            <div class="mb-8">
+                                <label class="${labelStyle}">跑馬燈字體大小</label>
+                                <div class="flex items-center gap-4">
+                                    <select id="system-marquee-size" class="${inputStyle}">
+                                        <option value="text-xs" ${currentSize === 'text-xs' ? 'selected' : ''}>最小 (Default)</option>
+                                        <option value="text-sm" ${currentSize === 'text-sm' ? 'selected' : ''}>小</option>
+                                        <option value="text-base" ${currentSize === 'text-base' ? 'selected' : ''}>中</option>
+                                        <option value="text-lg" ${currentSize === 'text-lg' ? 'selected' : ''}>大</option>
+                                        <option value="text-xl" ${currentSize === 'text-xl' ? 'selected' : ''}>特大</option>
+                                        <option value="text-2xl" ${currentSize === 'text-2xl' ? 'selected' : ''}>超大</option>
+                                    </select>
+                                    <span class="text-gray-500 text-sm">預覽: A+</span>
+                                </div>
                             </div>
 
                             <button onclick="saveSystemSettings()" class="${btnStyle} w-full"><i data-lucide="save" class="inline w-4 h-4 mr-1"></i> 儲存設定</button>
@@ -1427,7 +1540,6 @@
                         <i data-lucide="${icon}" class="w-5 h-5"></i> ${label}
                     </button>
                 `;
-
                 return `
                     <div class="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-gray-100 dark:border-gray-800 min-h-[80vh]">
                         <div class="w-full md:w-64 bg-gray-50 dark:bg-gray-950 p-6 flex flex-col gap-1 border-r border-gray-100 dark:border-gray-800">
@@ -1475,14 +1587,12 @@
             document.querySelectorAll('#mobile-menu button').forEach(el => {
                 if(el.dataset.key && I18N[APP_STATE.lang][el.dataset.key]) el.innerText = I18N[APP_STATE.lang][el.dataset.key];
             });
-
             const routes = {
                 'home': renderHome, 'events': renderEvents, 'mailboxes': renderMailboxes,
                 'gallery': renderGallery,
                 'org': renderOrg, 'finance': renderFinance, 'clubs': renderClubs, 'downloads': renderDownloads,
                 'contact': renderContact, 'meetings': renderMeetings, 'admin': renderAdmin
             };
-            
             // 安全渲染
             try {
                 container.innerHTML = routes[view] ? routes[view]() : renderHome();
@@ -1498,6 +1608,7 @@
         window.navigate = (view) => {
             APP_STATE.view = view;
             APP_STATE.eventFilter = 'All'; 
+            APP_STATE.galleryView = 'albums'; // Reset gallery view
             document.getElementById('mobile-menu').classList.add('hidden');
             render();
         };
@@ -1509,7 +1620,6 @@
             if(searchInput) searchInput.placeholder = t('searchPlaceholder');
             render();
         };
-
         window.toggleDarkMode = () => {
             APP_STATE.darkMode = !APP_STATE.darkMode;
             document.documentElement.classList.toggle('dark');
@@ -1520,7 +1630,6 @@
         document.getElementById('menu-button').addEventListener('click', () => {
             document.getElementById('mobile-menu').classList.toggle('hidden');
         });
-
         // Init
         (async () => {
             await loadDataFromFirebase();
