@@ -629,14 +629,15 @@
 
         window.addFinance = async () => {
             const date = document.getElementById('fin-date').value;
-            const item = document.getElementById('fin-item').value;
+            const item_zh = document.getElementById('fin-item-zh').value;
+            const item_en = document.getElementById('fin-item-en').value;
             let amount = parseInt(document.getElementById('fin-amount').value);
             const type = document.getElementById('fin-type').value;
-            if(!date || !item || !amount) return Swal.fire('資料不全', '', 'warning');
+            if(!date || !item_zh || !amount) return Swal.fire('資料不全', '', 'warning');
             if (type === 'Out') amount = -Math.abs(amount); else amount = Math.abs(amount);
             try {
                 await addDoc(collection(db, "finance"), {
-                    date, item_zh: item, item_en: item, amount, type, timestamp: serverTimestamp()
+                    date, item_zh, item_en: item_en || item_zh, amount, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增財務', '', 'success'); await loadDataFromFirebase(); render(); 
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
@@ -645,12 +646,13 @@
 
         window.addMeeting = async () => {
             const date = document.getElementById('mt-date').value;
-            const title = document.getElementById('mt-title').value;
+            const title_zh = document.getElementById('mt-title-zh').value;
+            const title_en = document.getElementById('mt-title-en').value;
             const link = document.getElementById('mt-link').value; 
-            if(!date || !title) return Swal.fire('資料不全', '', 'warning');
+            if(!date || !title_zh) return Swal.fire('資料不全', '', 'warning');
             try {
                 await addDoc(collection(db, "meetings"), {
-                    date, title_zh: title, title_en: title, file: link || '#', timestamp: serverTimestamp()
+                    date, title_zh, title_en: title_en || title_zh, file: link || '#', timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增會議記錄', '', 'success'); await loadDataFromFirebase(); render();
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
@@ -659,13 +661,14 @@
 
         window.addDownload = async () => {
             const date = document.getElementById('dl-date').value;
-            const title = document.getElementById('dl-title').value;
+            const title_zh = document.getElementById('dl-title-zh').value;
+            const title_en = document.getElementById('dl-title-en').value;
             const link = document.getElementById('dl-link').value;
             const type = document.getElementById('dl-type').value;
-            if(!date || !title || !link) return Swal.fire('資料不全', '', 'warning');
+            if(!date || !title_zh || !link) return Swal.fire('資料不全', '', 'warning');
             try {
                 await addDoc(collection(db, "downloads"), {
-                    date, title_zh: title, title_en: title, file: link, type, timestamp: serverTimestamp()
+                    date, title_zh, title_en: title_en || title_zh, file: link, type, timestamp: serverTimestamp()
                 });
                 Swal.fire('已新增下載', '', 'success'); await loadDataFromFirebase(); render();
             } catch(e) { Swal.fire('錯誤', e.message, 'error');
@@ -945,6 +948,12 @@
                 </div>
             `;
         }
+        
+        // [FIXED] Dedicated function for Back Button
+        window.backToAlbums = () => {
+            APP_STATE.galleryView = 'albums';
+            render();
+        }
 
         // [MODIFIED] Render Gallery to support Albums
         function renderGallery() {
@@ -1006,7 +1015,7 @@
 
                 return `
                     <div class="mb-8 flex items-center animate-fade-in">
-                        <button onclick="APP_STATE.galleryView='albums'; render()" class="flex items-center gap-2 text-gray-500 hover:text-theme-600 transition-colors font-bold bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
+                        <button onclick="backToAlbums()" class="flex items-center gap-2 text-gray-500 hover:text-theme-600 transition-colors font-bold bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm">
                             <i data-lucide="arrow-left" class="w-5 h-5"></i> 返回相簿列表
                         </button>
                     </div>
@@ -1407,7 +1416,10 @@
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">圖片網址 (URL)</label><input id="photo-url" class="${inputStyle}" placeholder="https://..."></div>
                                     <div><label class="${labelStyle}">中文標題</label><input id="photo-title-zh" class="${inputStyle}"></div>
-                                    <div><label class="${labelStyle}">English Title</label><input id="photo-title-en" class="${inputStyle}"></div>
+                                    <div class="flex gap-2 items-end">
+                                        <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="photo-title-en" class="${inputStyle}"></div>
+                                        <button onclick="autoTranslate('photo-title-zh', 'photo-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                    </div>
                                     <div><label class="${labelStyle}">相簿名稱 (Album)</label><input id="photo-album" class="${inputStyle}" placeholder="ex: 校慶運動會"></div>
                                     <button onclick="addPhoto()" class="${btnStyle} mt-2 w-full">新增照片</button>
                                 </div>
@@ -1432,7 +1444,11 @@
                                 <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="dollar-sign" class="text-theme-500"></i> 新增收支</h3>
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">日期</label><input id="fin-date" type="date" class="${inputStyle}"></div>
-                                    <div><label class="${labelStyle}">項目名稱</label><input id="fin-item" class="${inputStyle}"></div>
+                                    <div><label class="${labelStyle}">中文項目名稱</label><input id="fin-item-zh" class="${inputStyle}"></div>
+                                    <div class="flex gap-2 items-end">
+                                        <div class="flex-grow"><label class="${labelStyle}">English Item</label><input id="fin-item-en" class="${inputStyle}"></div>
+                                        <button onclick="autoTranslate('fin-item-zh', 'fin-item-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                    </div>
                                     <div class="flex gap-4">
                                         <div class="w-2/3"><label class="${labelStyle}">金額</label><input id="fin-amount" type="number" class="${inputStyle}" placeholder="1000"></div>
                                         <div class="w-1/3"><label class="${labelStyle}">類型</label><select id="fin-type" class="${inputStyle}"><option value="In">收入 (+)</option><option value="Out">支出 (-)</option></select></div>
@@ -1460,7 +1476,11 @@
                                 <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="file-plus" class="text-theme-500"></i> 上傳會議記錄</h3>
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">日期</label><input id="mt-date" type="date" class="${inputStyle}"></div>
-                                    <div><label class="${labelStyle}">標題</label><input id="mt-title" class="${inputStyle}"></div>
+                                    <div><label class="${labelStyle}">中文標題</label><input id="mt-title-zh" class="${inputStyle}"></div>
+                                    <div class="flex gap-2 items-end">
+                                        <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="mt-title-en" class="${inputStyle}"></div>
+                                        <button onclick="autoTranslate('mt-title-zh', 'mt-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                    </div>
                                     <div><label class="${labelStyle}">檔案連結 (Google Drive)</label><input id="mt-link" class="${inputStyle}" placeholder="https://..."></div>
                                     <button onclick="addMeeting()" class="${btnStyle} mt-2 w-full">發布紀錄</button>
                                 </div>
@@ -1485,7 +1505,11 @@
                                 <h3 class="font-bold mb-6 text-xl dark:text-white flex items-center gap-2"><i data-lucide="folder-plus" class="text-theme-500"></i> 新增下載資源</h3>
                                 <div class="space-y-4">
                                     <div><label class="${labelStyle}">日期</label><input id="dl-date" type="date" class="${inputStyle}"></div>
-                                    <div><label class="${labelStyle}">標題</label><input id="dl-title" class="${inputStyle}"></div>
+                                    <div><label class="${labelStyle}">中文標題</label><input id="dl-title-zh" class="${inputStyle}"></div>
+                                    <div class="flex gap-2 items-end">
+                                        <div class="flex-grow"><label class="${labelStyle}">English Title</label><input id="dl-title-en" class="${inputStyle}"></div>
+                                        <button onclick="autoTranslate('dl-title-zh', 'dl-title-en')" class="h-[50px] px-4 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"><i data-lucide="languages"></i></button>
+                                    </div>
                                     <div><label class="${labelStyle}">檔案連結</label><input id="dl-link" class="${inputStyle}" placeholder="https://..."></div>
                                     <div><label class="${labelStyle}">類型</label><select id="dl-type" class="${inputStyle}"><option value="Event">Event (活動)</option><option value="Academic">Academic (教務)</option><option value="Other">Other (其他)</option></select></div>
                                     <button onclick="addDownload()" class="${btnStyle} mt-2 w-full">發布資源</button>
