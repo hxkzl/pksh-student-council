@@ -336,7 +336,7 @@
                 const app = initializeApp(firebaseConfig);
                 
                 // [新增] 啟用 App Check (記得換成你的 reCAPTCHA Key)
-                self.FIREBASE_APPCHECK_DEBUG_TOKEN = true; // 本地測試用，上線後可移除這行
+                // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
                 initializeAppCheck(app, {
                     provider: new ReCaptchaEnterpriseProvider('6LcZA0gsAAAAAEHxUZAjATy05QzBQKkOG1wPfEtk'),
                     isTokenAutoRefreshEnabled: true
