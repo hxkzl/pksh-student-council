@@ -335,14 +335,16 @@
             if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
                 const app = initializeApp(firebaseConfig);
                 
-                // [新增] 啟用 App Check (記得換成你的 reCAPTCHA Key)
-                // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-                /*
-                initializeAppCheck(app, {
-                    provider: new ReCaptchaEnterpriseProvider('6LcZA0gsAAAAAEHxUZAjATy05QzBQKkOG1wPfEtk'),
-                    isTokenAutoRefreshEnabled: true
-                });
-                */
+                // 判斷：如果是本機測試 (localhost)，才開啟 Debug Token
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+}
+
+// 正常啟動 App Check
+initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider('6LcZA0gsAAAAAEHxUZAjATy05QzBQKkOG1wPfEtk'),
+    isTokenAutoRefreshEnabled: true
+});
 
                 db = getFirestore(app);
                 auth = getAuth(app);
