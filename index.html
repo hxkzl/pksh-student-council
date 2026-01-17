@@ -1885,14 +1885,14 @@ initializeAppCheck(app, {
                             'transition-all', 'duration-500'
                         );
                         
-                        // (3) 2.5 秒後移除效果
+                        // (3) 1.8 秒後移除效果
                         setTimeout(() => {
                             el.classList.remove(
                                 'ring-8', 'ring-yellow-400', 
                                 'bg-yellow-100', 'dark:bg-yellow-900', 
                                 'scale-110', 'z-10'
                             );
-                        }, 2000);
+                        }, 1800);
                     } else {
                         console.warn("找不到目標元素 ID:", targetId);
                     }
