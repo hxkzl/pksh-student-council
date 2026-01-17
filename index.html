@@ -1815,29 +1815,23 @@ initializeAppCheck(app, {
         }
 
         // --- Core Render ---
-        // --- Core Render (核心渲染函式) ---
         function render() {
             const container = document.getElementById('app-container');
             const view = APP_STATE.view;
             
-            // 1. 更新導覽列按鈕狀態 (Active State)
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 const isActive = btn.dataset.key === view;
                 if(isActive) btn.classList.add('bg-theme-50', 'dark:bg-theme-900/30', 'text-theme-600', 'dark:text-theme-400');
                 else btn.classList.remove('bg-theme-50', 'dark:bg-theme-900/30', 'text-theme-600', 'dark:text-theme-400');
             });
-
             updateMarquee();
             
-            // 2. 更新語言文字
             document.querySelectorAll('.nav-btn').forEach(el => {
                  if(I18N[APP_STATE.lang][el.dataset.key]) el.innerText = I18N[APP_STATE.lang][el.dataset.key];
             });
             document.querySelectorAll('#mobile-menu button').forEach(el => {
                 if(el.dataset.key && I18N[APP_STATE.lang][el.dataset.key]) el.innerText = I18N[APP_STATE.lang][el.dataset.key];
             });
-
-            // 3. 路由表
             const routes = {
                 'home': renderHome,
                 'events': renderEvents,
@@ -1852,7 +1846,7 @@ initializeAppCheck(app, {
                 'admin': renderAdmin
             };
 
-            // 4. 安全渲染內容
+            // 安全渲染
             try {
                 container.innerHTML = routes[view] ? routes[view]() : renderHome();
             } catch (e) {
@@ -1860,40 +1854,23 @@ initializeAppCheck(app, {
                 container.innerHTML = `<div class="p-10 text-center text-red-500">頁面載入錯誤，請稍後再試。<br><small>${e.message}</small></div>`;
             }
             
-            // 5. 重新生成圖示
             lucide.createIcons();
 
-            // 6. [自動滑動定位邏輯 - 超強力高亮版]
+            // [新增] 自動滑動定位邏輯
             if (APP_STATE.targetId) {
                 setTimeout(() => {
                     const el = document.getElementById(APP_STATE.targetId);
                     if (el) {
-                        // (1) 滑動到該元素 (置中)
+                        // 1. 滑動到該元素
                         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        
-                        // (2) 加上強力高亮效果 (黃色邊框 + 放大)
-                        el.classList.add(
-                            'ring-8', 'ring-yellow-400', 
-                            'bg-yellow-100', 'dark:bg-yellow-900', 
-                            'scale-110', 'z-10', 
-                            'transition-all', 'duration-500'
-                        );
-                        
-                        // (3) 2.5 秒後移除效果
-                        setTimeout(() => {
-                            el.classList.remove(
-                                'ring-8', 'ring-yellow-400', 
-                                'bg-yellow-100', 'dark:bg-yellow-900', 
-                                'scale-110', 'z-10'
-                            );
-                        }, 2500);
+                        // 2. 加上高亮效果 (閃爍邊框)
+                        el.classList.add('ring-4', 'ring-theme-400', 'transition-all', 'duration-500');
+                        // 3. 兩秒後移除
+                        setTimeout(() => el.classList.remove('ring-4', 'ring-theme-400'), 2000);
                     }
-                }, 500); 
-                
-                // 清空目標，避免下次亂跳
-                APP_STATE.targetId = null; 
+                }, 500); // 延遲 0.5 秒確保畫面已畫好
+                APP_STATE.targetId = null; // 清空目標
             } else {
-                // 如果沒有指定目標，就回到最頂端
                 window.scrollTo(0,0);
             }
         }
