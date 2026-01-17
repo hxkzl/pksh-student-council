@@ -1054,8 +1054,9 @@ initializeAppCheck(app, {
         // --- Render Functions ---
         function renderHome() {
             const announcements = APP_DATA.announcements;
+            // [修正] 這裡加上了 id="${item.id}"
             const newsHtml = announcements.map(item => `
-    <div id="${item.id}" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border-l-[6px] border-theme-500 hover-lift relative overflow-hidden">
+                <div id="${item.id}" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border-l-[6px] border-theme-500 hover-lift relative overflow-hidden">
                     <div class="flex justify-between items-start mb-2 relative z-10">
                         <span class="text-xs font-bold text-theme-600 dark:text-theme-400 uppercase tracking-wider bg-theme-50 dark:bg-theme-900/30 px-2 py-1 rounded">${val(item, 'tag')}</span>
                         <span class="text-xs text-gray-400 font-mono">${item.date}</span>
@@ -1064,6 +1065,7 @@ initializeAppCheck(app, {
                     ${item.content_zh ? `<div class="text-gray-600 dark:text-gray-300 overflow-x-auto news-content leading-relaxed relative z-10">${formatContent(val(item, 'content'))}</div>` : ''}
                 </div>
             `).join('');
+
             // 右側功能：活動倒數 + 最新照片預覽
             let rightSideHtml = '';
             // 1. 活動倒數
@@ -1243,9 +1245,11 @@ initializeAppCheck(app, {
             const filteredEvents = filter === 'All' 
                 ? APP_DATA.events 
                 : APP_DATA.events.filter(e => e.type === filter);
+
             const eventsHtml = filteredEvents.length > 0 ? filteredEvents.map(ev => {
                 const { month, day } = formatDateHelper(ev.date);
                 
+                // [修正] 這裡加上了 id="${ev.id}"
                 return `
                 <div id="${ev.id}" class="flex items-center bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md mb-5 border-l-[6px] ${ev.type === 'Holiday' ? 'border-red-500' : ev.type === 'Academic' ? 'border-blue-500' : 'border-theme-500'} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                     <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl text-center min-w-[90px] border border-gray-100 dark:border-gray-600 group-hover:border-theme-200 transition-colors">
@@ -1270,11 +1274,13 @@ initializeAppCheck(app, {
                     </div>
                 </div>
             `}).join('') : `<div class="text-center text-gray-400 py-20 font-medium bg-gray-50 dark:bg-gray-800/50 rounded-2xl">此分類暫無活動</div>`;
+
             const makeBtn = (type, label) => `
                 <button onclick="setEventFilter('${type}')" class="px-6 py-2.5 rounded-full text-sm font-bold transition-all transform active:scale-95 ${APP_STATE.eventFilter === type ? 'bg-theme-600 text-white shadow-lg ring-2 ring-theme-200' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm border border-gray-200 dark:border-gray-700'}">
                     ${label}
                 </button>
             `;
+
             return `
                 <div class="max-w-4xl mx-auto">
                     <div class="text-center mb-10">
@@ -1418,8 +1424,9 @@ initializeAppCheck(app, {
         }
 
         function renderDownloads() {
+            // [修正] 這裡加上了 id="${d.id}"
             const list = APP_DATA.downloads.map(d => `
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between border border-gray-100 dark:border-gray-700 hover:border-theme-400 hover:shadow-lg transition-all group gap-4">
+                <div id="${d.id}" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between border border-gray-100 dark:border-gray-700 hover:border-theme-400 hover:shadow-lg transition-all group gap-4">
                     <div class="flex items-center gap-5">
                         <div class="bg-theme-50 dark:bg-theme-900/30 p-4 rounded-2xl text-theme-600 dark:text-theme-400 group-hover:bg-theme-500 group-hover:text-white transition duration-300"><i data-lucide="file-text" class="w-6 h-6"></i></div>
                         <div>
@@ -1435,6 +1442,7 @@ initializeAppCheck(app, {
                     </a>
                 </div>
             `).join('');
+
             return `
                 <div class="max-w-4xl mx-auto">
                     <h1 class="text-3xl font-black mb-8 text-center text-theme-600 dark:text-theme-400 tracking-tight">${t('downloadTitle')}</h1>
