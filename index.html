@@ -10,6 +10,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 
+    <meta property="og:title" content="北港高中學生會 | PKSH Student Council" />
+    <meta property="og:description" content="你的聲音，我們的行動。共創更美好的校園生活。" />
+    <meta property="og:image" content="https://hxkzl.github.io/pksh-student-council/大頭貼.jpg" />
+    <meta property="og:url" content="https://hxkzl.github.io/pksh-student-council/" />
+    <meta property="og:type" content="website" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -1052,6 +1060,29 @@ initializeAppCheck(app, {
         });
 
         // --- Render Functions ---
+        // [新增] 產生 Google Calendar 連結的輔助函式
+        function createGoogleCalUrl(ev) {
+            const title = encodeURIComponent(val(ev, 'title'));
+            const loc = encodeURIComponent(val(ev, 'location'));
+            const details = encodeURIComponent('更多資訊請見北港高中學生會網站');
+            
+            // 簡單處理日期格式 (移除橫線)
+            const dateStr = ev.date.replace(/-/g, '');
+            let start = dateStr;
+            let end = dateStr;
+            
+            // 如果有填時間 (例如 08:00)，就加上時間
+            if (ev.time && ev.time.includes(':')) {
+                const timeStr = ev.time.replace(':', '') + '00';
+                start += 'T' + timeStr;
+                end += 'T' + timeStr; 
+            }
+
+            return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&location=${loc}&details=${details}`;
+        }
+
+        // 下面接著原本的 renderHome...
+        function renderHome() {
         function renderHome() {
             const announcements = APP_DATA.announcements;
             // [修正] 這裡加上了 id="${item.id}"
@@ -1069,20 +1100,32 @@ initializeAppCheck(app, {
             // 右側功能：活動倒數 + 最新照片預覽
             let rightSideHtml = '';
             // 1. 活動倒數
+            // 1. 活動倒數 (升級版)
             let nextEventHtml = `<div class="p-8 text-center text-gray-400 dark:text-gray-500 font-medium">暫無即將到來的活動</div>`;
             const futureEvents = APP_DATA.events.filter(e => new Date(e.date) >= new Date());
+            
             if (futureEvents.length > 0) {
                 const nextEv = futureEvents[0];
                 const daysLeft = Math.ceil((new Date(nextEv.date) - new Date()) / (1000 * 60 * 60 * 24));
+                
+                // [新增] 產生連結
+                const calLink = createGoogleCalUrl(nextEv);
+
                 nextEventHtml = `
                     <div class="text-center relative z-10">
                         <span class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">NEXT EVENT</span>
                         <h3 class="text-2xl font-black mt-3 dark:text-white bg-clip-text text-transparent bg-gradient-to-r from-theme-500 to-blue-500">${val(nextEv, 'title')}</h3>
-                        <div class="my-6 relative inline-block">
-                            <span class="text-6xl font-black text-theme-500 drop-shadow-sm">${daysLeft}</span>
+                        
+                        <div class="my-6 relative inline-block group cursor-default">
+                            <span class="text-6xl font-black text-theme-500 drop-shadow-sm group-hover:scale-110 transition-transform duration-300 inline-block">${daysLeft}</span>
                             <span class="text-gray-400 font-bold block mt-1 text-sm tracking-widest">DAYS LEFT</span>
                         </div>
-                        <p class="text-sm text-gray-500 font-medium bg-gray-100 dark:bg-gray-700/50 py-2 rounded-lg"><i data-lucide="calendar" class="inline w-4 h-4 mb-0.5 mr-1"></i> ${nextEv.date} @ ${val(nextEv, 'location')}</p>
+                        
+                        <p class="text-sm text-gray-500 font-medium bg-gray-100 dark:bg-gray-700/50 py-2 rounded-lg mb-4"><i data-lucide="calendar" class="inline w-4 h-4 mb-0.5 mr-1"></i> ${nextEv.date} @ ${val(nextEv, 'location')}</p>
+                        
+                        <a href="${calLink}" target="_blank" class="inline-flex items-center justify-center gap-2 bg-theme-500 hover:bg-theme-600 text-white font-bold py-2.5 px-6 rounded-full transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm w-full">
+                            <i data-lucide="calendar-plus" class="w-4 h-4"></i> ${isEn() ? 'Add to Calendar' : '加入行事曆'}
+                        </a>
                     </div>
                 `;
             }
@@ -1340,7 +1383,16 @@ initializeAppCheck(app, {
         }
 
         function renderFinance() {
+            // 全域變數存圖表
+        let financeChartInstance = null;
+
+        function renderFinance() {
             const total = APP_DATA.finance.reduce((acc, cur) => acc + Number(cur.amount), 0);
+            
+            // 計算總收入與總支出
+            const totalIncome = APP_DATA.finance.filter(f => f.amount > 0).reduce((acc, cur) => acc + cur.amount, 0);
+            const totalExpense = APP_DATA.finance.filter(f => f.amount < 0).reduce((acc, cur) => acc + Math.abs(cur.amount), 0);
+
             const rows = APP_DATA.finance.map(f => `
                 <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition last:border-0">
                     <td class="py-4 px-6 dark:text-gray-300 font-mono text-sm">${f.date}</td>
@@ -1348,25 +1400,93 @@ initializeAppCheck(app, {
                     <td class="py-4 px-6 text-right font-mono"><span class="${f.amount > 0 ? 'text-green-600 bg-green-50 dark:bg-green-900/30 ring-1 ring-green-200 dark:ring-green-800' : 'text-red-600 bg-red-50 dark:bg-red-900/30 ring-1 ring-red-200 dark:ring-red-800'} font-bold px-3 py-1 rounded-md text-sm">${f.amount > 0 ? '+' : ''}${f.amount.toLocaleString()}</span></td>
                 </tr>
             `).join('');
+
+            // [新增] 繪製長條圖 (Bar Chart)
+            setTimeout(() => {
+                const ctx = document.getElementById('financeChart');
+                if (ctx) {
+                    if (financeChartInstance) financeChartInstance.destroy();
+                    
+                    financeChartInstance = new Chart(ctx, {
+                        type: 'bar', // 改用 Bar Chart
+                        data: {
+                            labels: [isEn() ? 'Total Income' : '總收入', isEn() ? 'Total Expense' : '總支出'],
+                            datasets: [{
+                                label: 'Amount (TWD)',
+                                data: [totalIncome, totalExpense],
+                                backgroundColor: [
+                                    'rgba(20, 184, 166, 0.8)', // theme-500 (綠色)
+                                    'rgba(239, 68, 68, 0.8)'   // red-500 (紅色)
+                                ],
+                                borderColor: [
+                                    '#14b8a6',
+                                    '#ef4444'
+                                ],
+                                borderWidth: 2,
+                                borderRadius: 8 // 圓角柱狀
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false } // 長條圖不需要上方圖例
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(200, 200, 200, 0.1)' },
+                                    ticks: { color: '#9ca3af' }
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { 
+                                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#4b5563',
+                                        font: { size: 14, weight: 'bold' }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 100);
+
             return `
-                <div class="max-w-4xl mx-auto">
+                <div class="max-w-4xl mx-auto animate-fade-in">
                     <h1 class="text-3xl font-black mb-8 text-theme-600 dark:text-theme-400 text-center tracking-tight">${t('financeTitle')}</h1>
-                    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-                        <div class="p-8 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-6">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-theme-100 dark:bg-theme-900/30 p-3 rounded-full text-theme-600 dark:text-theme-400"><i data-lucide="pie-chart" class="w-6 h-6"></i></div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">本表僅列出近期收支概況，詳細報表請至學生會辦公室查閱。</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">CURRENT BALANCE</span>
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-3xl font-black ${total >= 0 ? 'text-theme-600 dark:text-theme-400' : 'text-red-500'} tracking-tight">
-                                        ${total > 0 ? '+' : ''}${total.toLocaleString()}
-                                    </span>
-                                    <span class="text-sm font-bold text-gray-400">TWD</span>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center relative overflow-hidden">
+                             <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">收支對比</h3>
+                             <div class="w-full h-48 relative z-10">
+                                <canvas id="financeChart"></canvas>
+                             </div>
+                             <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-theme-50 dark:bg-theme-900/20 rounded-full blur-2xl"></div>
+                        </div>
+
+                        <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-3xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col">
+                            <div class="p-8 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-6 h-full">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-theme-100 dark:bg-theme-900/30 p-4 rounded-full text-theme-600 dark:text-theme-400"><i data-lucide="bar-chart-3" class="w-8 h-8"></i></div>
+                                    <div>
+                                        <p class="font-bold text-lg dark:text-white">目前結餘</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">即時更新的財務透明化看板</p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">CURRENT BALANCE</span>
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-4xl font-black ${total >= 0 ? 'text-theme-600 dark:text-theme-400' : 'text-red-500'} tracking-tight">
+                                            ${total > 0 ? '+' : ''}${total.toLocaleString()}
+                                        </span>
+                                        <span class="text-sm font-bold text-gray-400">TWD</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 uppercase text-xs font-bold tracking-wider">
