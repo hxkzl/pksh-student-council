@@ -1067,7 +1067,7 @@ initializeAppCheck(app, {
         function renderHome() {
             const announcements = APP_DATA.announcements;
             const newsHtml = announcements.map(item => `
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border-l-[6px] border-theme-500 hover-lift relative overflow-hidden">
+    <div id="${item.id}" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border-l-[6px] border-theme-500 hover-lift relative overflow-hidden">
                     <div class="flex justify-between items-start mb-2 relative z-10">
                         <span class="text-xs font-bold text-theme-600 dark:text-theme-400 uppercase tracking-wider bg-theme-50 dark:bg-theme-900/30 px-2 py-1 rounded">${val(item, 'tag')}</span>
                         <span class="text-xs text-gray-400 font-mono">${item.date}</span>
@@ -1259,7 +1259,7 @@ initializeAppCheck(app, {
                 const { month, day } = formatDateHelper(ev.date);
                 
                 return `
-                <div class="flex items-center bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md mb-5 border-l-[6px] ${ev.type === 'Holiday' ? 'border-red-500' : ev.type === 'Academic' ? 'border-blue-500' : 'border-theme-500'} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div id="${ev.id}" class="flex items-center bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md mb-5 border-l-[6px] ${ev.type === 'Holiday' ? 'border-red-500' : ev.type === 'Academic' ? 'border-blue-500' : 'border-theme-500'} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                     <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl text-center min-w-[90px] border border-gray-100 dark:border-gray-600 group-hover:border-theme-200 transition-colors">
                         <span class="block text-2xl font-black text-gray-800 dark:text-white">${day}</span>
                         <span class="block text-xs font-bold text-gray-500 uppercase mt-1">${month}${isEn() ? '' : '月'}</span>
@@ -1859,13 +1859,35 @@ initializeAppCheck(app, {
             }
             
             lucide.createIcons();
-            window.scrollTo(0,0);
+
+            // [新增] 自動滑動定位邏輯
+            if (APP_STATE.targetId) {
+                setTimeout(() => {
+                    const el = document.getElementById(APP_STATE.targetId);
+                    if (el) {
+                        // 1. 滑動到該元素
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // 2. 加上高亮效果 (閃爍邊框)
+                        el.classList.add('ring-4', 'ring-theme-400', 'transition-all', 'duration-500');
+                        // 3. 兩秒後移除
+                        setTimeout(() => el.classList.remove('ring-4', 'ring-theme-400'), 2000);
+                    }
+                }, 500); // 延遲 0.5 秒確保畫面已畫好
+                APP_STATE.targetId = null; // 清空目標
+            } else {
+                window.scrollTo(0,0);
+            }
         }
 
-        window.navigate = (view) => {
+        // 修改後的 navigate，多了一個 targetId 參數
+        window.navigate = (view, targetId = null) => {
             APP_STATE.view = view;
-            APP_STATE.eventFilter = 'All';
-            APP_STATE.galleryView = 'albums'; // Reset gallery view
+            APP_STATE.eventFilter = 'All'; // 重置篩選，確保活動看得到
+            APP_STATE.galleryView = 'albums';
+            
+            // 1. 儲存目標 ID 到全域變數
+            APP_STATE.targetId = targetId; 
+
             const mobileMenu = document.getElementById('mobile-menu');
             if(mobileMenu) mobileMenu.classList.add('hidden');
             render();
